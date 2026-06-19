@@ -1,0 +1,49 @@
+/* candidate-actions-fixed.css */
+
+.candidate-action-modal {
+  max-width: 640px;
+  z-index: 999999;
+}
+
+.candidate-action-modal::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.candidate-action-modal__content textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 140px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.candidate-action-modal__content textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  background: #fff;
+}
+
+.candidate-action-hint {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.candidate-action-warning {
+  margin-bottom: var(--space-md);
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+.candidate-rejected-badge {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.candidate-note-preview {
+  white-space: pre-wrap;
+}

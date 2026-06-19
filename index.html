@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wazeefa — Recruitment Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App shell (shown after login) -->
+  <div id="app-shell" class="app-shell">
+    <header class="app-header">
+      <div class="app-header__inner">
+        <a href="#dashboard" class="brand" data-nav="dashboard">
+          <img src="assets/logo.png" alt="Wazeefa logo" class="logo-image logo-image--sm">
+          <span class="brand__name">Wazeefa</span>
+        </a>
+
+        <button
+          type="button"
+          class="nav-toggle"
+          id="nav-toggle"
+          aria-expanded="false"
+          aria-controls="main-nav"
+        >
+          <span class="nav-toggle__bar"></span>
+          <span class="nav-toggle__bar"></span>
+          <span class="nav-toggle__bar"></span>
+          <span class="sr-only">Toggle navigation</span>
+        </button>
+
+        <nav id="main-nav" class="main-nav" aria-label="Main navigation">
+          <a href="#dashboard" class="nav-link" data-nav="dashboard">Dashboard</a>
+          <a href="#candidates" class="nav-link" data-nav="candidates">Candidates</a>
+          <a href="#cv-upload" class="nav-link" data-nav="cv-upload">CV Upload</a>
+          <a href="#users" class="nav-link" data-nav="users">Users</a>
+        </nav>
+
+        <div class="app-header__actions">
+          <button type="button" class="avatar" id="logout-btn" title="Sign out">AM</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- Dashboard -->
+      <section id="view-dashboard" class="view" aria-label="Dashboard">
+        <header class="page-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p class="page-header__subtitle">Overview of your recruitment pipeline</p>
+          </div>
+        </header>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <p class="stat-card__label">Total Candidates</p>
+            <p class="stat-card__value" id="stat-candidates">0</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">In Interview</p>
+            <p class="stat-card__value" id="stat-interview">0</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">Offers Extended</p>
+            <p class="stat-card__value" id="stat-offers">0</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">Platform Users</p>
+            <p class="stat-card__value" id="stat-users">0</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Candidates -->
+      <section id="view-candidates" class="view" aria-label="Candidates">
+        <div class="candidates-layout">
+          <aside class="filters-panel">
+            <header class="filters-panel__header">
+              <h2>Filters</h2>
+              <p>Narrow down candidates</p>
+            </header>
+
+            <form id="filters-form" class="filters-form">
+              <div class="form-field">
+                <label for="filter-search">Search</label>
+                <input
+                  type="search"
+                  id="filter-search"
+                  placeholder="Name or email..."
+                >
+              </div>
+
+              <div class="form-field">
+                <label for="filter-role">Role</label>
+                <select id="filter-role">
+                  <option value="">All Roles</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="filter-status">Status</label>
+                <select id="filter-status">
+                  <option value="">All Statuses</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="filter-score">
+                  Min Score: <span id="score-value">0</span>
+                </label>
+                <input type="range" id="filter-score" min="0" max="100" value="0">
+              </div>
+
+              <button type="reset" class="btn btn--ghost btn--full">Clear Filters</button>
+            </form>
+          </aside>
+
+          <div class="candidates-content">
+            <header class="page-header page-header--compact">
+              <div>
+                <h1>Candidates</h1>
+                <p class="page-header__subtitle">
+                  <span id="candidate-count">0</span> candidates found
+                </p>
+              </div>
+            </header>
+
+            <div class="card table-card">
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Score</th>
+                      <th>Status</th>
+                      <th>Applied</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="candidates-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Candidate Detail -->
+      <section id="view-candidate-detail" class="view" aria-label="Candidate details">
+        <a href="#candidates" class="back-link" data-nav="candidates">&larr; Back to Candidates</a>
+
+        <header class="detail-header">
+          <div>
+            <h1 id="detail-name">—</h1>
+            <p class="page-header__subtitle" id="detail-role">—</p>
+          </div>
+          <div class="detail-header__actions">
+            <button type="button" class="btn btn--outline" id="schedule-interview-btn">Schedule Interview</button>
+            <button type="button" class="btn btn--dark" id="next-stage-btn">Move to Next Stage</button>
+          </div>
+        </header>
+
+        <div class="detail-layout">
+          <div class="detail-main">
+            <article class="card">
+              <header class="card__header"><h2>Contact Information</h2></header>
+              <div class="card__body info-grid" id="detail-contact"></div>
+            </article>
+
+            <article class="card">
+              <header class="card__header"><h2>Professional Summary</h2></header>
+              <div class="card__body">
+                <p class="text-muted" id="detail-summary"></p>
+                <hr class="divider">
+                <div class="info-grid info-grid--two" id="detail-experience"></div>
+              </div>
+            </article>
+
+            <article class="card">
+              <header class="card__header"><h2>Skills</h2></header>
+              <div class="card__body">
+                <div class="badge-list" id="detail-skills"></div>
+              </div>
+            </article>
+
+            <article class="card">
+              <header class="card__header"><h2>Application Timeline</h2></header>
+              <div class="card__body">
+                <ol class="timeline" id="detail-timeline"></ol>
+              </div>
+            </article>
+          </div>
+
+          <aside class="detail-sidebar">
+            <article class="card">
+              <header class="card__header"><h2>Overall Score</h2></header>
+              <div class="card__body score-display">
+                <p class="score-display__value" id="detail-score">—</p>
+                <span class="badge" id="detail-status-badge"></span>
+              </div>
+            </article>
+
+            <article class="card">
+              <header class="card__header"><h2>Score Breakdown</h2></header>
+              <div class="card__body" id="detail-breakdown"></div>
+            </article>
+
+            <article class="card">
+              <header class="card__header"><h2>Actions</h2></header>
+              <div class="card__body action-stack">
+                <button type="button" class="btn btn--outline btn--full">Send Email</button>
+                <button type="button" class="btn btn--outline btn--full">Download Resume</button>
+                <button type="button" class="btn btn--outline btn--full">Add Notes</button>
+                <hr class="divider">
+                <button type="button" class="btn btn--danger btn--full" id="reject-btn">Reject Candidate</button>
+              </div>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <!-- CV Upload -->
+      <section id="view-cv-upload" class="view" aria-label="CV upload">
+        <header class="page-header">
+          <div>
+            <h1>CV Upload</h1>
+            <p class="page-header__subtitle">Upload candidate resumes for AI screening</p>
+          </div>
+        </header>
+
+        <div class="card upload-card">
+          <div
+            class="upload-zone"
+            id="upload-zone"
+            tabindex="0"
+            role="button"
+            aria-label="Upload CV file"
+          >
+            <div class="upload-zone__icon" aria-hidden="true">&#8593;</div>
+            <p class="upload-zone__title">Drag and drop or upload your files</p>
+            <p class="upload-zone__hint">(.pdf or .docx)</p>
+            <input type="file" id="cv-file-input" accept=".pdf,.doc,.docx" hidden>
+          </div>
+
+          <p class="upload-status" id="upload-status" aria-live="polite"></p>
+
+          <div class="upload-actions">
+            <button type="button" class="btn btn--outline" id="upload-cancel-btn">Cancel</button>
+            <button type="button" class="btn btn--primary" id="upload-process-btn" disabled>Process</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- User Management -->
+      <section id="view-users" class="view" aria-label="User management">
+        <header class="page-header">
+          <div>
+            <h1>User Management</h1>
+            <p class="page-header__subtitle">Manage platform users and assign roles</p>
+          </div>
+          <button type="button" class="btn btn--primary" id="add-user-btn">Add User</button>
+        </header>
+
+        <div class="card table-card">
+          <header class="card__header">
+            <h2><span id="user-count">0</span> Total Users</h2>
+          </header>
+          <div class="card__body">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Wazeefa Demo &mdash; Frontend prototype. Backend integration coming soon.</p>
+    </footer>
+  </div>
+
+  <!-- Add User Modal -->
+  <dialog id="add-user-modal" class="modal">
+    <form id="add-user-form" method="dialog" class="modal__content">
+      <header class="modal__header">
+        <h2>Add User</h2>
+        <button type="button" class="modal__close" id="close-user-modal" aria-label="Close">&times;</button>
+      </header>
+
+      <div class="modal__body">
+        <div class="form-field">
+          <label for="user-name">Full Name</label>
+          <input type="text" id="user-name" required>
+          <span class="form-error" id="user-name-error" role="alert"></span>
+        </div>
+
+        <div class="form-field">
+          <label for="user-email">Email</label>
+          <input type="email" id="user-email" required>
+          <span class="form-error" id="user-email-error" role="alert"></span>
+        </div>
+
+        <div class="form-field">
+          <label for="user-role">Role</label>
+          <select id="user-role" required>
+            <option value="Recruiter">Recruiter</option>
+            <option value="HR Manager">HR Manager</option>
+            <option value="Interviewer">Interviewer</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+      </div>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--outline" id="cancel-user-btn">Cancel</button>
+        <button type="submit" class="btn btn--primary">Save User</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Toast notifications -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+  
+</body>
+</html>

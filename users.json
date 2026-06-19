@@ -1,0 +1,74 @@
+[
+  {
+    "id": "u1",
+    "name": "Admin Manager",
+    "email": "admin@company.com",
+    "role": "Admin",
+    "status": "Active",
+    "lastLogin": "5/24/2026",
+    "password": "password123"
+  },
+  {
+    "id": "u2",
+    "name": "Jennifer Smith",
+    "email": "j.smith@company.com",
+    "role": "HR Manager",
+    "status": "Active",
+    "lastLogin": "5/24/2026",
+    "password": "password123"
+  },
+  {
+    "id": "u3",
+    "name": "Robert Davis",
+    "email": "r.davis@company.com",
+    "role": "HR Manager",
+    "status": "Active",
+    "lastLogin": "5/23/2026",
+    "password": "password123"
+  },
+  {
+    "id": "u4",
+    "name": "Michelle Brown",
+    "email": "m.brown@company.com",
+    "role": "Recruiter",
+    "status": "Active",
+    "lastLogin": "5/24/2026",
+    "password": "password123"
+  },
+  {
+    "id": "u5",
+    "name": "Thomas Wilson",
+    "email": "t.wilson@company.com",
+    "role": "Recruiter",
+    "status": "Active",
+    "lastLogin": "5/22/2026",
+    "password": "password123"
+  },
+  {
+    "id": "u6",
+    "name": "Patricia Moore",
+    "email": "p.moore@company.com",
+    "role": "Interviewer",
+    "status": "Active",
+    "lastLogin": "5/23/2026",
+    "password": "password123"
+  },
+  {
+    "id": "u7",
+    "name": "Kevin Taylor",
+    "email": "k.taylor@company.com",
+    "role": "Interviewer",
+    "status": "Inactive",
+    "lastLogin": "5/10/2026",
+    "password": "password123"
+  },
+  {
+    "id": "u8",
+    "name": "Susan Anderson",
+    "email": "s.anderson@company.com",
+    "role": "Recruiter",
+    "status": "Active",
+    "lastLogin": "5/24/2026",
+    "password": "password123"
+  }
+]

@@ -1,0 +1,192 @@
+[
+  {
+    "id": "sarah-johnson",
+    "name": "Sarah Johnson",
+    "email": "sarah.j@email.com",
+    "role": "Senior Developer",
+    "score": 92,
+    "status": "Interview",
+    "applied": "5/15/2026",
+    "phone": "+1 (555) 123-4567",
+    "location": "San Francisco, CA",
+    "summary": "Experienced full-stack developer with a passion for building scalable web applications. Proven track record of leading development teams and delivering high-quality software solutions.",
+    "experience": "8 years",
+    "education": "BS Computer Science, Stanford University",
+    "skills": [
+      "React",
+      "TypeScript",
+      "Node.js",
+      "Python",
+      "AWS",
+      "Docker"
+    ],
+    "timeline": [
+      {
+        "title": "Application Submitted",
+        "date": "5/15/2026"
+      },
+      {
+        "title": "Initial Screening Completed",
+        "date": "5/17/2026"
+      },
+      {
+        "title": "Technical Assessment - Score: 95",
+        "date": "5/20/2026"
+      },
+      {
+        "title": "Phone Interview Scheduled",
+        "date": "5/22/2026"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Technical Skills",
+        "value": 95
+      },
+      {
+        "label": "Communication",
+        "value": 88
+      },
+      {
+        "label": "Cultural Fit",
+        "value": 93
+      },
+      {
+        "label": "Leadership",
+        "value": 90
+      }
+    ]
+  },
+  {
+    "id": "michael-chen",
+    "name": "Michael Chen",
+    "email": "m.chen@email.com",
+    "role": "Product Manager",
+    "score": 88,
+    "status": "Screening",
+    "applied": "5/18/2026",
+    "phone": "+1 (555) 234-5678",
+    "location": "Austin, TX",
+    "summary": "Product leader focused on user-centric design and cross-functional delivery.",
+    "experience": "6 years",
+    "education": "MBA, UT Austin",
+    "skills": [
+      "Roadmapping",
+      "Agile",
+      "Analytics",
+      "SQL"
+    ],
+    "timeline": [
+      {
+        "title": "Application Submitted",
+        "date": "5/18/2026"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Technical Skills",
+        "value": 82
+      },
+      {
+        "label": "Communication",
+        "value": 90
+      },
+      {
+        "label": "Cultural Fit",
+        "value": 86
+      },
+      {
+        "label": "Leadership",
+        "value": 88
+      }
+    ]
+  },
+  {
+    "id": "emily-rodriguez",
+    "name": "Emily Rodriguez",
+    "email": "emily.r@email.com",
+    "role": "UI Designer",
+    "score": 95,
+    "status": "Offer",
+    "applied": "5/10/2026",
+    "phone": "+1 (555) 345-6789",
+    "location": "New York, NY",
+    "summary": "UI designer specializing in design systems and accessible interfaces.",
+    "experience": "5 years",
+    "education": "BFA Design, RISD",
+    "skills": [
+      "Figma",
+      "Design Systems",
+      "Prototyping",
+      "Accessibility"
+    ],
+    "timeline": [
+      {
+        "title": "Offer Extended",
+        "date": "5/21/2026"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Technical Skills",
+        "value": 96
+      },
+      {
+        "label": "Communication",
+        "value": 92
+      },
+      {
+        "label": "Cultural Fit",
+        "value": 94
+      },
+      {
+        "label": "Leadership",
+        "value": 88
+      }
+    ]
+  },
+  {
+    "id": "david-kim",
+    "name": "David Kim",
+    "email": "david.k@email.com",
+    "role": "Senior Developer",
+    "score": 78,
+    "status": "Review",
+    "applied": "5/20/2026",
+    "phone": "+1 (555) 456-7890",
+    "location": "Seattle, WA",
+    "summary": "Backend engineer with strong distributed systems experience.",
+    "experience": "7 years",
+    "education": "MS Computer Science, UW",
+    "skills": [
+      "Java",
+      "Kubernetes",
+      "PostgreSQL",
+      "Go"
+    ],
+    "timeline": [
+      {
+        "title": "Application Submitted",
+        "date": "5/20/2026"
+      }
+    ],
+    "breakdown": [
+      {
+        "label": "Technical Skills",
+        "value": 80
+      },
+      {
+        "label": "Communication",
+        "value": 74
+      },
+      {
+        "label": "Cultural Fit",
+        "value": 78
+      },
+      {
+        "label": "Leadership",
+        "value": 76
+      }
+    ]
+  }
+]
