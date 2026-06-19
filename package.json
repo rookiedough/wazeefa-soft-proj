@@ -1,0 +1,8 @@
+{
+  "name": "wazeefa",
+  "version": "1.0.0",
+  "dependencies": {
+    "mammoth": "^1.8.0",
+    "node-fetch": "^2.6.7"
+  }
+}
