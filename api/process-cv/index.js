@@ -20,17 +20,6 @@ const candidateSchema = {
     experience: { type: "string" },
     education: { type: "string" },
     skills: { type: "array", items: { type: "string" } },
-    timeline: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          date: { type: "string" }
-        },
-        required: ["title", "date"]
-      }
-    },
     breakdown: {
       type: "array",
       items: {
@@ -256,21 +245,29 @@ module.exports = async function handler(req, res) {
 You are Wazeefa's AI resume screening assistant.
 Extract the candidate profile from this CV.
 
-Return only valid JSON following the provided schema.
-Do not return markdown or HTML.
-Do not include <ol>, <ul>, <li>, <br>, <p>, <div>, or any HTML tags.
+Rules:
+- Return only valid JSON.
+- Do not return markdown.
+- Do not return HTML.
+- Do not include <ol>, <ul>, <li>, <br>, <p>, <div>, or any HTML tags.
+- Follow the provided response schema exactly.
+- Do not generate an application timeline. The Application Timeline is handled by recruitment actions in the app, such as Move to Next Stage, Schedule Interview, and Reject Candidate.
 
-Important formatting rules:
-- experience must be a readable plain-text paragraph or section, not HTML.
-- education must be a readable plain-text paragraph or section, not HTML.
-- skills must be an array of short skill names.
-- timeline must be an array of { "title": "...", "date": "..." } objects.
-- timeline should include only the most important 8 to 12 items.
+Field rules:
+- summary must be only 2 to 3 clear recruiter-friendly sentences.
+- experience must be total estimated years of relevant experience only, not a long work history.
+  Example: "Approximately 2 years of relevant experience."
+- education must show only the latest or highest education entry.
+- skills must be an array of short skill names, not one long string.
 - score must be 0 to 100.
 - status must be "Review".
 - If a value is missing, use an empty string or empty array.
 - For role, infer the most likely target role from the CV.
-- For breakdown, include exactly: Technical Skills, Communication, Cultural Fit, Leadership.
+- For breakdown, include exactly:
+  Technical Skills
+  Communication
+  Cultural Fit
+  Leadership
 `;
 
     let candidate;
@@ -298,7 +295,30 @@ Important formatting rules:
     candidate.applied = candidate.applied || today();
     candidate.status = "Review";
 
+    // Application Timeline should not come from AI/CV processing.
+    candidate.timeline = [];
+
+    // Keep summary short.
+    if (candidate.summary) {
+      const sentences = String(candidate.summary)
+        .replace(/<[^>]*>/g, "")
+        .split(/(?<=[.!?])\s+/)
+        .filter(Boolean);
+
+      candidate.summary = sentences.slice(0, 3).join(" ");
+    }
+
+    // Clean experience and education from any accidental HTML.
+    candidate.experience = String(candidate.experience || "")
+      .replace(/<[^>]*>/g, "")
+      .trim();
+
+    candidate.education = String(candidate.education || "")
+      .replace(/<[^>]*>/g, "")
+      .trim();
+
     return res.status(200).json(candidate);
+
   } catch (error) {
     console.error("CV processing failed:", error);
     return res.status(500).json({
@@ -307,3 +327,4 @@ Important formatting rules:
     });
   }
 };
+

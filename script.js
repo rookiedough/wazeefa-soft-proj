@@ -19,6 +19,7 @@ const NOTES_KEY = "wazeefa_candidate_notes";
 const INTERVIEWS_KEY = "wazeefa_candidate_interviews";
 const REJECTED_KEY = "wazeefa_rejected_candidates";
 const STAGES_KEY = "wazeefa_candidate_stages";
+const STAGE_HISTORY_KEY = "wazeefa_candidate_stage_history";
 const APP_VIEWS = new Set(["dashboard", "candidates", "candidate-detail", "cv-upload", "users"]);
 
 let CANDIDATES = [];
@@ -282,10 +283,86 @@ function getCandidateDisplayStatus(candidate) {
   return stages[candidate.id] || candidate.status || "Review";
 }
 
-function setCandidateStage(candidateId, stage) {
+function addCandidateTimelineEvent(candidateId, title, date = today(), note = "") {
+  const history = getJson(STAGE_HISTORY_KEY, {});
+
+  if (!history[candidateId]) {
+    history[candidateId] = [];
+  }
+
+  history[candidateId].push({
+    title,
+    date,
+    note,
+    createdAt: new Date().toISOString()
+  });
+
+  setJson(STAGE_HISTORY_KEY, history);
+}
+
+function getCandidateStageHistory(candidateId) {
+  return getJson(STAGE_HISTORY_KEY, {})[candidateId] || [];
+}
+
+function setCandidateStage(candidateId, stage, note = "") {
   const stages = getJson(STAGES_KEY, {});
+  const previousStage = stages[candidateId];
+
   stages[candidateId] = stage;
   setJson(STAGES_KEY, stages);
+
+  if (previousStage !== stage) {
+    addCandidateTimelineEvent(candidateId, `Moved to ${stage}`, today(), note);
+  }
+}
+
+function getApplicationTimeline(candidate) {
+  if (!candidate) return [];
+
+  const timeline = [
+    {
+      title: "Application submitted",
+      date: candidate.applied || today()
+    }
+  ];
+
+  const history = getCandidateStageHistory(candidate.id);
+
+  history.forEach((item) => {
+    timeline.push({
+      title: item.title || "Stage updated",
+      date: item.date || "",
+      note: item.note || ""
+    });
+  });
+
+  const interview = getCandidateInterview(candidate.id);
+  if (interview) {
+    const interviewDate = interview.datetime
+      ? new Date(interview.datetime).toLocaleString("en-US", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        })
+      : "Date not set";
+
+    timeline.push({
+      title: "Interview scheduled",
+      date: interviewDate
+    });
+  }
+
+  const rejected = getRejectedCandidates()[candidate.id];
+  if (rejected) {
+    timeline.push({
+      title: "Candidate rejected",
+      date: rejected.rejectedAt
+        ? new Date(rejected.rejectedAt).toLocaleDateString("en-US")
+        : today(),
+      note: rejected.reason || ""
+    });
+  }
+
+  return timeline;
 }
 
 function getCandidateInterview(candidateId) {
@@ -454,13 +531,20 @@ function renderCandidateDetail() {
   $("#detail-skills").innerHTML = skills.map((skill) => `<span class="badge">${escapeHtml(skill)}</span>`).join("");
 
   const timeline = Array.isArray(candidate.timeline) ? candidate.timeline : [];
-  $("#detail-timeline").innerHTML = timeline
+  const applicationTimeline = getApplicationTimeline(candidate);
+
+  $("#detail-timeline").innerHTML = applicationTimeline
     .map(
       (item) => `
         <li>
           <div>
-            <p class="timeline__title">${escapeHtml(item.title || "Timeline item")}</p>
+            <p class="timeline__title">${escapeHtml(item.title)}</p>
             <p class="timeline__date">${escapeHtml(item.date || "")}</p>
+            ${
+              item.note
+                ? `<p class="text-muted timeline__note">${escapeHtml(item.note)}</p>`
+                : ""
+            }
           </div>
         </li>
       `
@@ -925,6 +1009,12 @@ function openRejectCandidateModal() {
       rejectedAt: new Date().toISOString()
     };
     setJson(REJECTED_KEY, rejected);
+    addCandidateTimelineEvent(
+      candidate.id,
+      "Candidate rejected",
+      today(),
+      $("#reject-reason").value.trim()
+    );
     closeActionModal();
     renderCandidateDetail();
     renderDashboard();
@@ -1005,8 +1095,8 @@ function openMoveStageModal(candidate) {
 
   $("#cancel-stage-btn").addEventListener("click", closeActionModal);
   $("#confirm-stage-btn").addEventListener("click", () => {
-    setCandidateStage(candidate.id, nextStage);
     const note = $("#stage-note").value.trim();
+    setCandidateStage(candidate.id, nextStage, note);
     if (note) {
       const notes = getJson(NOTES_KEY, {});
       const existing = notes[candidate.id] ? `${notes[candidate.id]}\n\n` : "";
