@@ -127,8 +127,6 @@
 .data-table th,
 .data-table td {
   vertical-align: middle;
-  overflow-wrap: anywhere;
-  word-break: normal;
   line-height: 1.35;
 }
 
@@ -147,17 +145,46 @@
 .data-table th:nth-child(7),
 .data-table td:nth-child(7) { width: 8%; }
 
-.candidate-email-cell,
-.user-email-cell {
-  overflow-wrap: anywhere;
+/* Ellipsis behavior for long table text */
+.data-table td {
+  overflow: hidden;
 }
 
-.badge {
+.data-table td:not(.actions-cell) {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.data-table td:not(.actions-cell) *:not(.badge):not(button):not(.action-menu) {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.candidate-name-cell,
+.candidate-email-cell,
+.candidate-role-cell,
+.candidate-date-cell,
+.user-email-cell {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Keep badges and buttons readable instead of truncating them */
+.badge,
+.table-action,
+.action-menu-trigger {
   white-space: nowrap;
 }
 
+/* Candidate detail page can still show full paragraphs */
 .multiline-text {
   white-space: pre-line;
+  overflow: visible;
+  text-overflow: initial;
 }
 
 .settings-grid {
