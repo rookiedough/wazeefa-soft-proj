@@ -696,21 +696,30 @@ function renderUsersTable() {
   tbody.innerHTML = users
     .map(
       (u) => `
-        <tr>
-          <td title="${escapeHtml(u.name)}">${escapeHtml(u.name)}</td>
-          <td class="text-muted user-email-cell" title="${escapeHtml(u.email)}">${escapeHtml(u.email)}</td>
-          <td><span class="${statusBadgeClass(u.role)}">${escapeHtml(u.role)}</span></td>
-          <td><span class="${statusBadgeClass(u.status)}">${escapeHtml(u.status)}</span></td>
-          <td class="text-muted" title="${escapeHtml(u.lastLogin || "Never")}">${escapeHtml(u.lastLogin || "Never")}</td>
-          <td class="actions-cell">
-            <button type="button" class="table-action action-menu-trigger" data-user-menu="${escapeHtml(u.id)}" aria-label="Open actions for ${escapeHtml(u.name)}">•••</button>
-            <div class="action-menu" id="user-menu-${escapeHtml(u.id)}" hidden>
-              <button type="button" data-user-action="reset-password" data-user-id="${escapeHtml(u.id)}">Reset password</button>
-              <button type="button" data-user-action="toggle-status" data-user-id="${escapeHtml(u.id)}">${u.status === "Active" ? "Deactivate" : "Activate"}</button>
-              <button type="button" class="danger" data-user-action="remove" data-user-id="${escapeHtml(u.id)}">Remove user</button>
-            </div>
-          </td>
-        </tr>
+        <td class="actions-cell">
+          <button
+            type="button"
+            class="table-action action-menu-trigger"
+            data-user-menu="${escapeHtml(u.id)}"
+            aria-label="Open actions for ${escapeHtml(u.name)}"
+          >
+            •••
+          </button>
+
+          <div class="action-menu" id="user-menu-${escapeHtml(u.id)}" hidden>
+            <button type="button" data-user-action="reset-password" data-user-id="${escapeHtml(u.id)}">
+              Reset password
+            </button>
+
+            <button type="button" data-user-action="toggle-status" data-user-id="${escapeHtml(u.id)}">
+              ${u.status === "Active" ? "Deactivate" : "Activate"}
+            </button>
+
+            <button type="button" class="danger" data-user-action="remove" data-user-id="${escapeHtml(u.id)}">
+              Remove user
+            </button>
+          </div>
+        </td>
       `
     )
     .join("");
@@ -723,8 +732,9 @@ function closeAllUserMenus() {
 }
 
 function toggleUserMenu(userId) {
-  const menu = $(`#user-menu-${safeId(userId)}`);
+  const menu = document.getElementById(`user-menu-${userId}`);
   if (!menu) return;
+
   const wasHidden = menu.hidden;
   closeAllUserMenus();
   menu.hidden = !wasHidden;
@@ -1273,6 +1283,7 @@ function initEventListeners() {
 
   $("#users-table-body")?.addEventListener("click", (event) => {
     const menuButton = event.target.closest("[data-user-menu]");
+
     if (menuButton) {
       event.preventDefault();
       event.stopPropagation();
@@ -1282,11 +1293,13 @@ function initEventListeners() {
 
     const actionButton = event.target.closest("[data-user-action]");
     if (!actionButton) return;
+
     event.preventDefault();
     event.stopPropagation();
 
     const userId = actionButton.dataset.userId;
     const action = actionButton.dataset.userAction;
+
     closeAllUserMenus();
 
     if (action === "reset-password") resetUserPassword(userId);

@@ -58,3 +58,118 @@
 .settings-item span { color: var(--color-text-muted, #6b7280); word-break: break-word; }
 
 @media (max-width: 900px) { .data-table { min-width: 760px; } }
+
+/* =========================================================
+   FIX: User Management three-dot menu should appear above table
+   ========================================================= */
+
+.data-table td.actions-cell {
+  overflow: visible !important;
+  position: relative;
+  z-index: 50;
+}
+
+.data-table tr:has(.action-menu:not([hidden])) {
+  position: relative;
+  z-index: 9999;
+}
+
+.action-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 999999 !important;
+  min-width: 180px;
+  padding: 0.35rem;
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.2);
+}
+
+.action-menu[hidden] {
+  display: none !important;
+}
+
+.action-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 0;
+  border-radius: var(--radius-sm, 8px);
+  background: transparent;
+  color: var(--color-text, #111827);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.action-menu button:hover {
+  background: var(--color-bg-subtle, #f3f4f6);
+}
+
+.action-menu button.danger {
+  color: var(--color-danger, #dc2626);
+}
+
+/* Keep the three-dot button visible and clickable */
+.action-menu-trigger {
+  position: relative;
+  z-index: 999998;
+  min-width: 2.2rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* =========================================================
+   FIX: Profile menu and settings modal should appear on top
+   ========================================================= */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 999990 !important;
+  overflow: visible !important;
+}
+
+.app-header__inner,
+.app-header__actions {
+  position: relative;
+  overflow: visible !important;
+  z-index: 999991 !important;
+}
+
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: 999999 !important;
+  min-width: 240px;
+  padding: 0.4rem;
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.25);
+}
+
+.profile-menu[hidden] {
+  display: none !important;
+}
+
+/* Dialogs / modals should be above all page content */
+dialog,
+.modal,
+.candidate-action-modal,
+.profile-settings-modal,
+#candidate-action-modal,
+#simple-action-modal {
+  z-index: 1000000 !important;
+}
+
+dialog::backdrop,
+.modal::backdrop,
+.candidate-action-modal::backdrop,
+.profile-settings-modal::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
