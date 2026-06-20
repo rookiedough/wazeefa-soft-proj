@@ -1,12 +1,18 @@
 /**
  * Wazeefa Demo App
- * Clean frontend script for login, candidates, users, and CV upload.
+ * Fixed frontend script with:
+ * - Profile menu: Settings + Logout
+ * - User management three-dot action menu
+ * - Candidate table rendering safety
+ * - CV upload integration
  */
 
 const DEFAULT_PASSWORD = "password123";
 const USERS_STORAGE_KEY = "wazeefa_users";
 const AUTH_STORAGE_KEY = "wazeefa_auth_user";
 const UPLOADED_CANDIDATES_KEY = "wazeefa_uploaded_candidates";
+const REJECTED_KEY = "wazeefa_rejected_candidates";
+const STAGES_KEY = "wazeefa_candidate_stages";
 const APP_VIEWS = new Set(["dashboard", "candidates", "candidate-detail", "cv-upload", "users"]);
 
 let CANDIDATES = [];
@@ -29,7 +35,7 @@ function today() {
 }
 
 function escapeHtml(value = "") {
-  return String(value)
+  return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -167,7 +173,6 @@ function handleLogin(event) {
   }
 
   const user = users.find((item) => item.email.toLowerCase() === email);
-
   if (!user || user.password !== password) {
     passwordError.textContent = "Invalid email or password. Use a user email and password123.";
     passwordInput.classList.add("is-invalid");
@@ -256,6 +261,22 @@ function getAllCandidates() {
   return [...CANDIDATES, ...getUploadedCandidates()];
 }
 
+function getRejectedCandidates() {
+  return getJson(REJECTED_KEY, {});
+}
+
+function getCandidateDisplayStatus(candidate) {
+  if (getRejectedCandidates()[candidate.id]) return "Rejected";
+  const stages = getJson(STAGES_KEY, {});
+  return stages[candidate.id] || candidate.status || "Review";
+}
+
+function setCandidateStage(candidateId, stage) {
+  const stages = getJson(STAGES_KEY, {});
+  stages[candidateId] = stage;
+  setJson(STAGES_KEY, stages);
+}
+
 function renderDashboard() {
   const allCandidates = getAllCandidates();
 
@@ -267,12 +288,15 @@ function renderDashboard() {
       .join("")
       .slice(0, 2)
       .toUpperCase();
-    avatar.title = `Sign out ${state.currentUser.name}`;
+    avatar.title = `Open profile menu for ${state.currentUser.name}`;
+    avatar.setAttribute("aria-haspopup", "menu");
+    avatar.setAttribute("aria-expanded", "false");
   }
+  ensureProfileMenu();
 
   if ($("#stat-candidates")) $("#stat-candidates").textContent = allCandidates.length;
-  if ($("#stat-interview")) $("#stat-interview").textContent = allCandidates.filter((c) => c.status === "Interview").length;
-  if ($("#stat-offers")) $("#stat-offers").textContent = allCandidates.filter((c) => c.status === "Offer").length;
+  if ($("#stat-interview")) $("#stat-interview").textContent = allCandidates.filter((c) => getCandidateDisplayStatus(c) === "Interview").length;
+  if ($("#stat-offers")) $("#stat-offers").textContent = allCandidates.filter((c) => getCandidateDisplayStatus(c) === "Offer").length;
   if ($("#stat-users")) $("#stat-users").textContent = users.length;
 }
 
@@ -300,7 +324,7 @@ function getFilteredCandidates() {
     const name = candidate.name || "";
     const email = candidate.email || "";
     const candidateRole = candidate.role || "";
-    const candidateStatus = candidate.status || "";
+    const candidateStatus = getCandidateDisplayStatus(candidate);
     const candidateScore = Number(candidate.score || 0);
 
     const matchesSearch = !query || name.toLowerCase().includes(query) || email.toLowerCase().includes(query);
@@ -326,19 +350,20 @@ function renderCandidatesTable() {
   }
 
   tbody.innerHTML = filtered
-    .map(
-      (c) => `
+    .map((c) => {
+      const displayStatus = getCandidateDisplayStatus(c);
+      return `
         <tr>
-          <td>${escapeHtml(c.name || "Unknown")}</td>
-          <td class="text-muted">${escapeHtml(c.email || "")}</td>
-          <td>${escapeHtml(c.role || "")}</td>
+          <td class="candidate-name-cell">${escapeHtml(c.name || "Unknown")}</td>
+          <td class="candidate-email-cell text-muted">${escapeHtml(c.email || "")}</td>
+          <td class="candidate-role-cell">${escapeHtml(c.role || "")}</td>
           <td><span class="${scoreBadgeClass(Number(c.score || 0))}">${Number(c.score || 0)}</span></td>
-          <td><span class="${statusBadgeClass(c.status || "Review")}">${escapeHtml(c.status || "Review")}</span></td>
-          <td class="text-muted">${escapeHtml(c.applied || "")}</td>
+          <td><span class="${statusBadgeClass(displayStatus)}">${escapeHtml(displayStatus)}</span></td>
+          <td class="text-muted candidate-date-cell">${escapeHtml(c.applied || "")}</td>
           <td><button type="button" class="table-action" data-view-candidate="${escapeHtml(c.id)}">View</button></td>
         </tr>
-      `
-    )
+      `;
+    })
     .join("");
 }
 
@@ -366,8 +391,12 @@ function getCandidateById(id) {
   return allCandidates.find((candidate) => candidate.id === id) || allCandidates[0];
 }
 
+function getCurrentCandidate() {
+  return getCandidateById(state.selectedCandidateId);
+}
+
 function renderCandidateDetail() {
-  const candidate = getCandidateById(state.selectedCandidateId);
+  const candidate = getCurrentCandidate();
   if (!candidate) return;
 
   state.selectedCandidateId = candidate.id;
@@ -377,9 +406,10 @@ function renderCandidateDetail() {
   $("#detail-summary").textContent = candidate.summary || "";
   $("#detail-score").textContent = Number(candidate.score || 0);
 
+  const displayStatus = getCandidateDisplayStatus(candidate);
   const statusBadge = $("#detail-status-badge");
-  statusBadge.textContent = candidate.status || "Review";
-  statusBadge.className = statusBadgeClass(candidate.status || "Review");
+  statusBadge.textContent = displayStatus;
+  statusBadge.className = statusBadgeClass(displayStatus);
 
   $("#detail-contact").innerHTML = `
     <div class="info-item"><p class="info-item__label">Email</p><p class="info-item__value">${escapeHtml(candidate.email || "")}</p></div>
@@ -391,11 +421,11 @@ function renderCandidateDetail() {
   $("#detail-experience").innerHTML = `
     <div class="info-item">
       <p class="info-item__label">Experience</p>
-      <p class="info-item__value text-muted">${escapeHtml(candidate.experience || "")}</p>
+      <p class="info-item__value text-muted multiline-text">${escapeHtml(candidate.experience || "")}</p>
     </div>
     <div class="info-item">
       <p class="info-item__label">Education</p>
-      <p class="info-item__value text-muted">${escapeHtml(candidate.education || "")}</p>
+      <p class="info-item__value text-muted multiline-text">${escapeHtml(candidate.education || "")}</p>
     </div>
   `;
 
@@ -435,11 +465,25 @@ function renderCandidateDetail() {
 }
 
 function handleCandidateAction(action) {
-  const candidate = getCandidateById(state.selectedCandidateId);
+  const candidate = getCurrentCandidate();
   if (!candidate) return;
 
-  if (action === "schedule") showToast(`Interview scheduled for ${candidate.name}.`);
-  if (action === "next-stage") showToast(`${candidate.name} moved to the next stage.`);
+  if (action === "schedule") {
+    setCandidateStage(candidate.id, "Interview");
+    showToast(`Interview scheduled for ${candidate.name}.`);
+    renderCandidateDetail();
+    renderDashboard();
+  }
+  if (action === "next-stage") {
+    const flow = ["Review", "Screening", "Interview", "Offer", "Hired"];
+    const current = getCandidateDisplayStatus(candidate);
+    const index = flow.indexOf(current);
+    const next = flow[Math.min(index + 1, flow.length - 1)] || "Screening";
+    setCandidateStage(candidate.id, next);
+    showToast(`${candidate.name} moved to ${next}.`);
+    renderCandidateDetail();
+    renderDashboard();
+  }
 }
 
 const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"];
@@ -560,15 +604,76 @@ function renderUsersTable() {
       (u) => `
         <tr>
           <td>${escapeHtml(u.name)}</td>
-          <td class="text-muted">${escapeHtml(u.email)}</td>
+          <td class="text-muted user-email-cell">${escapeHtml(u.email)}</td>
           <td><span class="${statusBadgeClass(u.role)}">${escapeHtml(u.role)}</span></td>
           <td><span class="${statusBadgeClass(u.status)}">${escapeHtml(u.status)}</span></td>
           <td class="text-muted">${escapeHtml(u.lastLogin || "Never")}</td>
-          <td><button type="button" class="table-action" data-remove-user="${escapeHtml(u.id)}">Remove</button></td>
+          <td class="actions-cell">
+            <button type="button" class="table-action action-menu-trigger" data-user-menu="${escapeHtml(u.id)}" aria-label="Open actions for ${escapeHtml(u.name)}">•••</button>
+            <div class="action-menu" id="user-menu-${escapeHtml(u.id)}" hidden>
+              <button type="button" data-user-action="reset-password" data-user-id="${escapeHtml(u.id)}">Reset password</button>
+              <button type="button" data-user-action="toggle-status" data-user-id="${escapeHtml(u.id)}">${u.status === "Active" ? "Deactivate" : "Activate"}</button>
+              <button type="button" class="danger" data-user-action="remove" data-user-id="${escapeHtml(u.id)}">Remove user</button>
+            </div>
+          </td>
         </tr>
       `
     )
     .join("");
+}
+
+function closeAllUserMenus() {
+  $$(".action-menu").forEach((menu) => {
+    menu.hidden = true;
+  });
+}
+
+function toggleUserMenu(userId) {
+  const menu = $(`#user-menu-${CSS.escape(userId)}`);
+  if (!menu) return;
+  const wasHidden = menu.hidden;
+  closeAllUserMenus();
+  menu.hidden = !wasHidden;
+}
+
+function resetUserPassword(userId) {
+  const user = users.find((u) => u.id === userId);
+  if (!user) return;
+  user.password = DEFAULT_PASSWORD;
+  saveUsers();
+  showToast(`${user.name}'s password was reset to ${DEFAULT_PASSWORD}.`);
+}
+
+function toggleUserStatus(userId) {
+  const user = users.find((u) => u.id === userId);
+  if (!user) return;
+  if (state.currentUser?.id === userId) {
+    showToast("You cannot deactivate your own account while logged in.");
+    return;
+  }
+  user.status = user.status === "Active" ? "Inactive" : "Active";
+  saveUsers();
+  renderUsersTable();
+  renderDashboard();
+  showToast(`${user.name} is now ${user.status}.`);
+}
+
+function removeUser(userId) {
+  const user = users.find((u) => u.id === userId);
+  if (!user) return;
+
+  if (state.currentUser?.id === userId) {
+    showToast("You cannot remove the user you are currently logged in as.");
+    return;
+  }
+
+  if (!confirm(`Remove ${user.name}?`)) return;
+
+  users = users.filter((u) => u.id !== userId);
+  saveUsers();
+  renderUsersTable();
+  renderDashboard();
+  showToast(`${user.name} removed.`);
 }
 
 function openAddUserModal() {
@@ -628,27 +733,134 @@ function handleAddUser(event) {
   showToast(`${name} added. Default password is ${DEFAULT_PASSWORD}.`);
 }
 
-function removeUser(userId) {
-  const user = users.find((u) => u.id === userId);
-  if (!user) return;
+function ensureProfileMenu() {
+  const actions = $(".app-header__actions");
+  const avatar = $("#logout-btn");
+  if (!actions || !avatar || !state.currentUser) return;
 
-  if (state.currentUser && state.currentUser.id === userId) {
-    showToast("You cannot remove the user you are currently logged in as.");
-    return;
+  let menu = $("#profile-menu");
+  if (!menu) {
+    menu = document.createElement("div");
+    menu.id = "profile-menu";
+    menu.className = "profile-menu";
+    menu.hidden = true;
+    menu.setAttribute("role", "menu");
+    actions.appendChild(menu);
   }
 
-  if (!confirm(`Remove ${user.name}?`)) return;
+  menu.innerHTML = `
+    <div class="profile-menu__header">
+      <p class="profile-menu__name">${escapeHtml(state.currentUser.name || "User")}</p>
+      <p class="profile-menu__email">${escapeHtml(state.currentUser.email || "")}</p>
+    </div>
+    <button type="button" role="menuitem" id="profile-settings-btn">Settings</button>
+    <button type="button" role="menuitem" class="danger" id="profile-logout-btn">Logout</button>
+  `;
 
-  users = users.filter((u) => u.id !== userId);
-  saveUsers();
-  renderUsersTable();
-  renderDashboard();
-  showToast(`${user.name} removed.`);
+  $("#profile-settings-btn").addEventListener("click", () => {
+    closeProfileMenu();
+    openSettingsModal();
+  });
+  $("#profile-logout-btn").addEventListener("click", () => {
+    closeProfileMenu();
+    handleLogout();
+  });
+}
+
+function toggleProfileMenu() {
+  ensureProfileMenu();
+  const menu = $("#profile-menu");
+  const avatar = $("#logout-btn");
+  if (!menu) return;
+
+  const wasHidden = menu.hidden;
+  menu.hidden = !wasHidden;
+  avatar?.setAttribute("aria-expanded", String(wasHidden));
+}
+
+function closeProfileMenu() {
+  const menu = $("#profile-menu");
+  const avatar = $("#logout-btn");
+  if (menu) menu.hidden = true;
+  avatar?.setAttribute("aria-expanded", "false");
+}
+
+function ensureSimpleDialog() {
+  let dialog = $("#simple-action-modal");
+  if (dialog) return dialog;
+
+  dialog = document.createElement("dialog");
+  dialog.id = "simple-action-modal";
+  dialog.className = "modal profile-settings-modal";
+  dialog.innerHTML = `
+    <form method="dialog" class="modal__content">
+      <header class="modal__header">
+        <h2 id="simple-action-title">Settings</h2>
+        <button type="button" class="modal__close" id="simple-action-close" aria-label="Close">&times;</button>
+      </header>
+      <div class="modal__body" id="simple-action-body"></div>
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--primary" id="simple-action-ok">Close</button>
+      </footer>
+    </form>
+  `;
+  document.body.appendChild(dialog);
+  $("#simple-action-close").addEventListener("click", () => dialog.close());
+  $("#simple-action-ok").addEventListener("click", () => dialog.close());
+  return dialog;
+}
+
+function openSettingsModal() {
+  const dialog = ensureSimpleDialog();
+  $("#simple-action-title").textContent = "Settings";
+  $("#simple-action-body").innerHTML = `
+    <div class="settings-grid">
+      <div class="settings-item"><strong>Name</strong><span>${escapeHtml(state.currentUser?.name || "Not available")}</span></div>
+      <div class="settings-item"><strong>Email</strong><span>${escapeHtml(state.currentUser?.email || "Not available")}</span></div>
+      <div class="settings-item"><strong>Role</strong><span>${escapeHtml(state.currentUser?.role || "Not available")}</span></div>
+    </div>
+    <p class="candidate-action-hint" style="margin-top:1rem;">Settings are display-only in this frontend demo.</p>
+  `;
+  dialog.showModal();
+}
+
+function handleCandidateActionClick(event) {
+  const button = event.target.closest("button");
+  if (!button || !button.closest(".action-stack")) return;
+
+  const label = button.textContent.trim().toLowerCase();
+  if (label === "send email") {
+    event.preventDefault();
+    showToast("Email draft action is available in the demo flow.");
+  }
+  if (label === "download resume") {
+    event.preventDefault();
+    showToast("Resume download is a placeholder action in this demo.");
+  }
+  if (label === "add notes") {
+    event.preventDefault();
+    showToast("Notes action is a placeholder action in this demo.");
+  }
+  if (button.id === "reject-btn" || label === "reject candidate") {
+    event.preventDefault();
+    const candidate = getCurrentCandidate();
+    if (!candidate) return;
+    const rejected = getRejectedCandidates();
+    rejected[candidate.id] = { name: candidate.name, rejectedAt: new Date().toISOString() };
+    setJson(REJECTED_KEY, rejected);
+    showToast(`${candidate.name} marked as rejected.`);
+    renderCandidateDetail();
+    renderDashboard();
+  }
 }
 
 function initEventListeners() {
   $("#login-form")?.addEventListener("submit", handleLogin);
-  $("#logout-btn")?.addEventListener("click", handleLogout);
+  $("#logout-btn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleProfileMenu();
+  });
 
   $$('[data-nav]').forEach((el) => {
     el.addEventListener("click", (event) => {
@@ -680,7 +892,7 @@ function initEventListeners() {
 
   $("#schedule-interview-btn")?.addEventListener("click", () => handleCandidateAction("schedule"));
   $("#next-stage-btn")?.addEventListener("click", () => handleCandidateAction("next-stage"));
-  $("#reject-btn")?.addEventListener("click", () => showToast("Candidate marked as rejected."));
+  $(".action-stack")?.addEventListener("click", handleCandidateActionClick);
 
   const uploadZone = $("#upload-zone");
   const fileInput = $("#cv-file-input");
@@ -713,8 +925,38 @@ function initEventListeners() {
   $("#add-user-form")?.addEventListener("submit", handleAddUser);
 
   $("#users-table-body")?.addEventListener("click", (event) => {
-    const removeButton = event.target.closest("[data-remove-user]");
-    if (removeButton) removeUser(removeButton.dataset.removeUser);
+    const menuButton = event.target.closest("[data-user-menu]");
+    if (menuButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleUserMenu(menuButton.dataset.userMenu);
+      return;
+    }
+
+    const actionButton = event.target.closest("[data-user-action]");
+    if (!actionButton) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const userId = actionButton.dataset.userId;
+    const action = actionButton.dataset.userAction;
+    closeAllUserMenus();
+
+    if (action === "reset-password") resetUserPassword(userId);
+    if (action === "toggle-status") toggleUserStatus(userId);
+    if (action === "remove") removeUser(userId);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".actions-cell")) closeAllUserMenus();
+    if (!event.target.closest(".app-header__actions")) closeProfileMenu();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeProfileMenu();
+      closeAllUserMenus();
+    }
   });
 
   window.addEventListener("hashchange", parseHash);
