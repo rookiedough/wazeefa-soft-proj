@@ -16,6 +16,7 @@ const candidateSchema = {
     score: { type: "integer" },
     status: { type: "string" },
     applied: { type: "string" },
+    timeline: { type: "array", items: { type: "object" } },
     summary: { type: "string" },
     experience: { type: "string" },
     education: { type: "string" },
@@ -188,7 +189,6 @@ function today() {
 
 async function callGeminiWithParts(parts) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
