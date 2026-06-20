@@ -1,9 +1,13 @@
 /**
  * Wazeefa Demo App
- * Fixed frontend script with:
+ * Fixed frontend script with restored candidate actions:
  * - Profile menu: Settings + Logout
  * - User management three-dot action menu
- * - Candidate table rendering safety
+ * - Candidate table ellipsis-friendly rendering
+ * - Schedule Interview modal
+ * - Send Email modal
+ * - Add Notes modal
+ * - Reject Candidate action
  * - CV upload integration
  */
 
@@ -11,6 +15,8 @@ const DEFAULT_PASSWORD = "password123";
 const USERS_STORAGE_KEY = "wazeefa_users";
 const AUTH_STORAGE_KEY = "wazeefa_auth_user";
 const UPLOADED_CANDIDATES_KEY = "wazeefa_uploaded_candidates";
+const NOTES_KEY = "wazeefa_candidate_notes";
+const INTERVIEWS_KEY = "wazeefa_candidate_interviews";
 const REJECTED_KEY = "wazeefa_rejected_candidates";
 const STAGES_KEY = "wazeefa_candidate_stages";
 const APP_VIEWS = new Set(["dashboard", "candidates", "candidate-detail", "cv-upload", "users"]);
@@ -41,6 +47,11 @@ function escapeHtml(value = "") {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function safeId(value) {
+  if (window.CSS && CSS.escape) return CSS.escape(value);
+  return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
 }
 
 function getJson(key, fallback) {
@@ -277,6 +288,16 @@ function setCandidateStage(candidateId, stage) {
   setJson(STAGES_KEY, stages);
 }
 
+function getCandidateInterview(candidateId) {
+  return getJson(INTERVIEWS_KEY, {})[candidateId] || null;
+}
+
+function saveCandidateInterview(candidateId, interview) {
+  const interviews = getJson(INTERVIEWS_KEY, {});
+  interviews[candidateId] = interview;
+  setJson(INTERVIEWS_KEY, interviews);
+}
+
 function renderDashboard() {
   const allCandidates = getAllCandidates();
 
@@ -354,12 +375,12 @@ function renderCandidatesTable() {
       const displayStatus = getCandidateDisplayStatus(c);
       return `
         <tr>
-          <td class="candidate-name-cell">${escapeHtml(c.name || "Unknown")}</td>
-          <td class="candidate-email-cell text-muted">${escapeHtml(c.email || "")}</td>
-          <td class="candidate-role-cell">${escapeHtml(c.role || "")}</td>
+          <td class="candidate-name-cell" title="${escapeHtml(c.name || "Unknown")}">${escapeHtml(c.name || "Unknown")}</td>
+          <td class="candidate-email-cell text-muted" title="${escapeHtml(c.email || "")}">${escapeHtml(c.email || "")}</td>
+          <td class="candidate-role-cell" title="${escapeHtml(c.role || "")}">${escapeHtml(c.role || "")}</td>
           <td><span class="${scoreBadgeClass(Number(c.score || 0))}">${Number(c.score || 0)}</span></td>
           <td><span class="${statusBadgeClass(displayStatus)}">${escapeHtml(displayStatus)}</span></td>
-          <td class="text-muted candidate-date-cell">${escapeHtml(c.applied || "")}</td>
+          <td class="text-muted candidate-date-cell" title="${escapeHtml(c.applied || "")}">${escapeHtml(c.applied || "")}</td>
           <td><button type="button" class="table-action" data-view-candidate="${escapeHtml(c.id)}">View</button></td>
         </tr>
       `;
@@ -462,28 +483,17 @@ function renderCandidateDetail() {
       `
     )
     .join("");
+
+  renderCandidateNotesCard(candidate.id);
+  renderCandidateInterviewCard(candidate.id);
 }
 
 function handleCandidateAction(action) {
   const candidate = getCurrentCandidate();
   if (!candidate) return;
 
-  if (action === "schedule") {
-    setCandidateStage(candidate.id, "Interview");
-    showToast(`Interview scheduled for ${candidate.name}.`);
-    renderCandidateDetail();
-    renderDashboard();
-  }
-  if (action === "next-stage") {
-    const flow = ["Review", "Screening", "Interview", "Offer", "Hired"];
-    const current = getCandidateDisplayStatus(candidate);
-    const index = flow.indexOf(current);
-    const next = flow[Math.min(index + 1, flow.length - 1)] || "Screening";
-    setCandidateStage(candidate.id, next);
-    showToast(`${candidate.name} moved to ${next}.`);
-    renderCandidateDetail();
-    renderDashboard();
-  }
+  if (action === "schedule") openScheduleInterviewModal(candidate);
+  if (action === "next-stage") openMoveStageModal(candidate);
 }
 
 const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"];
@@ -603,11 +613,11 @@ function renderUsersTable() {
     .map(
       (u) => `
         <tr>
-          <td>${escapeHtml(u.name)}</td>
-          <td class="text-muted user-email-cell">${escapeHtml(u.email)}</td>
+          <td title="${escapeHtml(u.name)}">${escapeHtml(u.name)}</td>
+          <td class="text-muted user-email-cell" title="${escapeHtml(u.email)}">${escapeHtml(u.email)}</td>
           <td><span class="${statusBadgeClass(u.role)}">${escapeHtml(u.role)}</span></td>
           <td><span class="${statusBadgeClass(u.status)}">${escapeHtml(u.status)}</span></td>
-          <td class="text-muted">${escapeHtml(u.lastLogin || "Never")}</td>
+          <td class="text-muted" title="${escapeHtml(u.lastLogin || "Never")}">${escapeHtml(u.lastLogin || "Never")}</td>
           <td class="actions-cell">
             <button type="button" class="table-action action-menu-trigger" data-user-menu="${escapeHtml(u.id)}" aria-label="Open actions for ${escapeHtml(u.name)}">•••</button>
             <div class="action-menu" id="user-menu-${escapeHtml(u.id)}" hidden>
@@ -629,7 +639,7 @@ function closeAllUserMenus() {
 }
 
 function toggleUserMenu(userId) {
-  const menu = $(`#user-menu-${CSS.escape(userId)}`);
+  const menu = $(`#user-menu-${safeId(userId)}`);
   if (!menu) return;
   const wasHidden = menu.hidden;
   closeAllUserMenus();
@@ -733,6 +743,283 @@ function handleAddUser(event) {
   showToast(`${name} added. Default password is ${DEFAULT_PASSWORD}.`);
 }
 
+function ensureActionModal() {
+  let dialog = $("#candidate-action-modal");
+  if (dialog) return dialog;
+
+  dialog = document.createElement("dialog");
+  dialog.id = "candidate-action-modal";
+  dialog.className = "modal candidate-action-modal";
+  dialog.innerHTML = `
+    <form method="dialog" class="modal__content">
+      <header class="modal__header">
+        <h2 id="candidate-action-title">Action</h2>
+        <button type="button" class="modal__close" id="candidate-action-close" aria-label="Close">&times;</button>
+      </header>
+      <div class="modal__body" id="candidate-action-body"></div>
+      <footer class="modal__footer" id="candidate-action-footer"></footer>
+    </form>
+  `;
+  document.body.appendChild(dialog);
+  $("#candidate-action-close").addEventListener("click", closeActionModal);
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) closeActionModal();
+  });
+  return dialog;
+}
+
+function openActionModal(title, bodyHtml, footerHtml) {
+  const dialog = ensureActionModal();
+  $("#candidate-action-title").textContent = title;
+  $("#candidate-action-body").innerHTML = bodyHtml;
+  $("#candidate-action-footer").innerHTML = footerHtml;
+  dialog.showModal();
+}
+
+function closeActionModal() {
+  const dialog = $("#candidate-action-modal");
+  if (dialog?.open) dialog.close();
+}
+
+function renderCandidateNotesCard(candidateId) {
+  const notes = getJson(NOTES_KEY, {});
+  let card = $("#candidate-notes-card");
+  if (!notes[candidateId]) {
+    card?.remove();
+    return;
+  }
+  if (!card) {
+    card = document.createElement("article");
+    card.id = "candidate-notes-card";
+    card.className = "card";
+    $(".detail-main")?.appendChild(card);
+  }
+  card.innerHTML = `
+    <header class="card__header"><h2>Recruitment Notes</h2></header>
+    <div class="card__body"><p class="text-muted candidate-note-preview"></p></div>
+  `;
+  card.querySelector(".candidate-note-preview").textContent = notes[candidateId];
+}
+
+function renderCandidateInterviewCard(candidateId) {
+  const interview = getCandidateInterview(candidateId);
+  let card = $("#candidate-interview-card");
+  if (!interview) {
+    card?.remove();
+    return;
+  }
+  if (!card) {
+    card = document.createElement("article");
+    card.id = "candidate-interview-card";
+    card.className = "card";
+    $(".detail-main")?.appendChild(card);
+  }
+  const dateText = interview.datetime
+    ? new Date(interview.datetime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })
+    : "Not set";
+
+  card.innerHTML = `
+    <header class="card__header"><h2>Scheduled Interview</h2></header>
+    <div class="card__body info-grid">
+      <div class="info-item"><p class="info-item__label">Date & Time</p><p class="info-item__value">${escapeHtml(dateText)}</p></div>
+      <div class="info-item"><p class="info-item__label">Type</p><p class="info-item__value">${escapeHtml(interview.type || "Interview")}</p></div>
+      <div class="info-item"><p class="info-item__label">Interviewer</p><p class="info-item__value">${escapeHtml(interview.interviewer || "Not assigned")}</p></div>
+      <div class="info-item"><p class="info-item__label">Location / Link</p><p class="info-item__value">${escapeHtml(interview.location || "Not set")}</p></div>
+    </div>
+    ${interview.notes ? `<div class="card__body"><p class="text-muted multiline-text">${escapeHtml(interview.notes)}</p></div>` : ""}
+  `;
+}
+
+function openSendEmailModal() {
+  const candidate = getCurrentCandidate();
+  if (!candidate) return;
+
+  const subject = `Application update - ${candidate.role || "Wazeefa"}`;
+  const message = `Dear ${candidate.name || "Candidate"},\n\nThank you for your interest in the ${candidate.role || "role"}. We wanted to share an update regarding your application.\n\nBest regards,\nWazeefa Recruitment Team`;
+
+  openActionModal(
+    `Send email to ${candidate.name || "candidate"}`,
+    `
+      <div class="form-field"><label for="candidate-email-to">To</label><input id="candidate-email-to" type="email" value="${escapeHtml(candidate.email || "")}"></div>
+      <div class="form-field"><label for="candidate-email-subject">Subject</label><input id="candidate-email-subject" type="text" value="${escapeHtml(subject)}"></div>
+      <div class="form-field"><label for="candidate-email-body">Message</label><textarea id="candidate-email-body" rows="8">${escapeHtml(message)}</textarea></div>
+      <p class="candidate-action-hint">This opens your email app with a pre-filled draft, or you can copy the draft.</p>
+    `,
+    `<button type="button" class="btn btn--outline" id="copy-email-draft-btn">Copy Draft</button><button type="button" class="btn btn--primary" id="open-email-client-btn">Open Email App</button>`
+  );
+
+  $("#copy-email-draft-btn").addEventListener("click", async () => {
+    const draft = `To: ${$("#candidate-email-to").value}\nSubject: ${$("#candidate-email-subject").value}\n\n${$("#candidate-email-body").value}`;
+    try {
+      await navigator.clipboard.writeText(draft);
+      showToast("Email draft copied.");
+    } catch {
+      showToast("Could not copy automatically. Please copy manually.");
+    }
+  });
+
+  $("#open-email-client-btn").addEventListener("click", () => {
+    const to = $("#candidate-email-to").value.trim();
+    if (!to) {
+      showToast("Please enter a recipient email address.");
+      return;
+    }
+    window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent($("#candidate-email-subject").value)}&body=${encodeURIComponent($("#candidate-email-body").value)}`;
+    closeActionModal();
+  });
+}
+
+function openNotesModal() {
+  const candidate = getCurrentCandidate();
+  if (!candidate) return;
+
+  const notes = getJson(NOTES_KEY, {});
+
+  openActionModal(
+    `Notes for ${candidate.name || "candidate"}`,
+    `
+      <div class="form-field">
+        <label for="candidate-note-text">Recruitment notes</label>
+        <textarea id="candidate-note-text" rows="9" placeholder="Add notes...">${escapeHtml(notes[candidate.id] || "")}</textarea>
+      </div>
+      <p class="candidate-action-hint">Notes are saved in this browser for the demo.</p>
+    `,
+    `<button type="button" class="btn btn--outline" id="clear-note-btn">Clear</button><button type="button" class="btn btn--primary" id="save-note-btn">Save Note</button>`
+  );
+
+  $("#clear-note-btn").addEventListener("click", () => {
+    $("#candidate-note-text").value = "";
+  });
+
+  $("#save-note-btn").addEventListener("click", () => {
+    const updated = getJson(NOTES_KEY, {});
+    updated[candidate.id] = $("#candidate-note-text").value.trim();
+    setJson(NOTES_KEY, updated);
+    closeActionModal();
+    renderCandidateNotesCard(candidate.id);
+    showToast("Candidate note saved.");
+  });
+}
+
+function openRejectCandidateModal() {
+  const candidate = getCurrentCandidate();
+  if (!candidate) return;
+
+  openActionModal(
+    `Reject ${candidate.name || "candidate"}?`,
+    `
+      <p class="candidate-action-warning">This will mark the candidate as rejected.</p>
+      <div class="form-field"><label for="reject-reason">Reason / note</label><textarea id="reject-reason" rows="6" placeholder="Optional reason..."></textarea></div>
+    `,
+    `<button type="button" class="btn btn--outline" id="cancel-reject-btn">Cancel</button><button type="button" class="btn btn--danger" id="confirm-reject-btn">Reject Candidate</button>`
+  );
+
+  $("#cancel-reject-btn").addEventListener("click", closeActionModal);
+  $("#confirm-reject-btn").addEventListener("click", () => {
+    const rejected = getRejectedCandidates();
+    rejected[candidate.id] = {
+      name: candidate.name,
+      email: candidate.email,
+      role: candidate.role,
+      reason: $("#reject-reason").value.trim(),
+      rejectedAt: new Date().toISOString()
+    };
+    setJson(REJECTED_KEY, rejected);
+    closeActionModal();
+    renderCandidateDetail();
+    renderDashboard();
+    showToast(`${candidate.name} marked as rejected.`);
+  });
+}
+
+function getNextStage(currentStage) {
+  const flow = ["Review", "Screening", "Interview", "Offer", "Hired"];
+  const index = flow.indexOf(currentStage);
+  if (index === -1) return "Screening";
+  return flow[Math.min(index + 1, flow.length - 1)];
+}
+
+function openScheduleInterviewModal(candidate) {
+  const existing = getCandidateInterview(candidate.id) || {};
+
+  openActionModal(
+    `Schedule interview for ${candidate.name || "candidate"}`,
+    `
+      <div class="form-field"><label for="interview-datetime">Date & time</label><input id="interview-datetime" type="datetime-local" value="${escapeHtml(existing.datetime || "")}"></div>
+      <div class="form-field"><label for="interview-type">Interview type</label><select id="interview-type">
+        <option value="Phone Interview" ${existing.type === "Phone Interview" ? "selected" : ""}>Phone Interview</option>
+        <option value="Technical Interview" ${existing.type === "Technical Interview" ? "selected" : ""}>Technical Interview</option>
+        <option value="Panel Interview" ${existing.type === "Panel Interview" ? "selected" : ""}>Panel Interview</option>
+        <option value="Final Interview" ${existing.type === "Final Interview" ? "selected" : ""}>Final Interview</option>
+      </select></div>
+      <div class="form-field"><label for="interview-interviewer">Interviewer</label><input id="interview-interviewer" type="text" value="${escapeHtml(existing.interviewer || "")}"></div>
+      <div class="form-field"><label for="interview-location">Location / meeting link</label><input id="interview-location" type="text" value="${escapeHtml(existing.location || "")}"></div>
+      <div class="form-field"><label for="interview-notes">Notes</label><textarea id="interview-notes" rows="5">${escapeHtml(existing.notes || "")}</textarea></div>
+    `,
+    `<button type="button" class="btn btn--outline" id="cancel-interview-btn">Cancel</button><button type="button" class="btn btn--primary" id="save-interview-btn">Save Interview</button>`
+  );
+
+  $("#cancel-interview-btn").addEventListener("click", closeActionModal);
+  $("#save-interview-btn").addEventListener("click", () => {
+    const datetime = $("#interview-datetime").value;
+    if (!datetime) {
+      showToast("Please choose an interview date and time.");
+      return;
+    }
+
+    saveCandidateInterview(candidate.id, {
+      datetime,
+      type: $("#interview-type").value,
+      interviewer: $("#interview-interviewer").value.trim(),
+      location: $("#interview-location").value.trim(),
+      notes: $("#interview-notes").value.trim(),
+      scheduledAt: new Date().toISOString()
+    });
+
+    if (!getRejectedCandidates()[candidate.id]) setCandidateStage(candidate.id, "Interview");
+    closeActionModal();
+    renderCandidateDetail();
+    renderDashboard();
+    showToast("Interview scheduled successfully.");
+  });
+}
+
+function openMoveStageModal(candidate) {
+  const currentStage = getCandidateDisplayStatus(candidate);
+  if (currentStage === "Rejected") {
+    showToast("Rejected candidates cannot be moved to the next stage.");
+    return;
+  }
+
+  const nextStage = getNextStage(currentStage);
+
+  openActionModal(
+    `Move ${candidate.name || "candidate"} to next stage?`,
+    `
+      <p class="text-muted">Current stage: <strong>${escapeHtml(currentStage)}</strong></p>
+      <p class="text-muted">Next stage: <strong>${escapeHtml(nextStage)}</strong></p>
+      <div class="form-field" style="margin-top: 1rem;"><label for="stage-note">Stage note</label><textarea id="stage-note" rows="5"></textarea></div>
+    `,
+    `<button type="button" class="btn btn--outline" id="cancel-stage-btn">Cancel</button><button type="button" class="btn btn--primary" id="confirm-stage-btn">Move to ${escapeHtml(nextStage)}</button>`
+  );
+
+  $("#cancel-stage-btn").addEventListener("click", closeActionModal);
+  $("#confirm-stage-btn").addEventListener("click", () => {
+    setCandidateStage(candidate.id, nextStage);
+    const note = $("#stage-note").value.trim();
+    if (note) {
+      const notes = getJson(NOTES_KEY, {});
+      const existing = notes[candidate.id] ? `${notes[candidate.id]}\n\n` : "";
+      notes[candidate.id] = `${existing}[Stage moved to ${nextStage} on ${today()}]\n${note}`;
+      setJson(NOTES_KEY, notes);
+    }
+    closeActionModal();
+    renderCandidateDetail();
+    renderDashboard();
+    showToast(`Candidate moved to ${nextStage}.`);
+  });
+}
+
 function ensureProfileMenu() {
   const actions = $(".app-header__actions");
   const avatar = $("#logout-btn");
@@ -785,43 +1072,20 @@ function closeProfileMenu() {
   avatar?.setAttribute("aria-expanded", "false");
 }
 
-function ensureSimpleDialog() {
-  let dialog = $("#simple-action-modal");
-  if (dialog) return dialog;
-
-  dialog = document.createElement("dialog");
-  dialog.id = "simple-action-modal";
-  dialog.className = "modal profile-settings-modal";
-  dialog.innerHTML = `
-    <form method="dialog" class="modal__content">
-      <header class="modal__header">
-        <h2 id="simple-action-title">Settings</h2>
-        <button type="button" class="modal__close" id="simple-action-close" aria-label="Close">&times;</button>
-      </header>
-      <div class="modal__body" id="simple-action-body"></div>
-      <footer class="modal__footer">
-        <button type="button" class="btn btn--primary" id="simple-action-ok">Close</button>
-      </footer>
-    </form>
-  `;
-  document.body.appendChild(dialog);
-  $("#simple-action-close").addEventListener("click", () => dialog.close());
-  $("#simple-action-ok").addEventListener("click", () => dialog.close());
-  return dialog;
-}
-
 function openSettingsModal() {
-  const dialog = ensureSimpleDialog();
-  $("#simple-action-title").textContent = "Settings";
-  $("#simple-action-body").innerHTML = `
-    <div class="settings-grid">
-      <div class="settings-item"><strong>Name</strong><span>${escapeHtml(state.currentUser?.name || "Not available")}</span></div>
-      <div class="settings-item"><strong>Email</strong><span>${escapeHtml(state.currentUser?.email || "Not available")}</span></div>
-      <div class="settings-item"><strong>Role</strong><span>${escapeHtml(state.currentUser?.role || "Not available")}</span></div>
-    </div>
-    <p class="candidate-action-hint" style="margin-top:1rem;">Settings are display-only in this frontend demo.</p>
-  `;
-  dialog.showModal();
+  openActionModal(
+    "Settings",
+    `
+      <div class="settings-grid">
+        <div class="settings-item"><strong>Name</strong><span>${escapeHtml(state.currentUser?.name || "Not available")}</span></div>
+        <div class="settings-item"><strong>Email</strong><span>${escapeHtml(state.currentUser?.email || "Not available")}</span></div>
+        <div class="settings-item"><strong>Role</strong><span>${escapeHtml(state.currentUser?.role || "Not available")}</span></div>
+      </div>
+      <p class="candidate-action-hint" style="margin-top:1rem;">Settings are display-only in this frontend demo.</p>
+    `,
+    `<button type="button" class="btn btn--primary" id="close-settings-btn">Close</button>`
+  );
+  $("#close-settings-btn").addEventListener("click", closeActionModal);
 }
 
 function handleCandidateActionClick(event) {
@@ -831,7 +1095,7 @@ function handleCandidateActionClick(event) {
   const label = button.textContent.trim().toLowerCase();
   if (label === "send email") {
     event.preventDefault();
-    showToast("Email draft action is available in the demo flow.");
+    openSendEmailModal();
   }
   if (label === "download resume") {
     event.preventDefault();
@@ -839,18 +1103,11 @@ function handleCandidateActionClick(event) {
   }
   if (label === "add notes") {
     event.preventDefault();
-    showToast("Notes action is a placeholder action in this demo.");
+    openNotesModal();
   }
   if (button.id === "reject-btn" || label === "reject candidate") {
     event.preventDefault();
-    const candidate = getCurrentCandidate();
-    if (!candidate) return;
-    const rejected = getRejectedCandidates();
-    rejected[candidate.id] = { name: candidate.name, rejectedAt: new Date().toISOString() };
-    setJson(REJECTED_KEY, rejected);
-    showToast(`${candidate.name} marked as rejected.`);
-    renderCandidateDetail();
-    renderDashboard();
+    openRejectCandidateModal();
   }
 }
 

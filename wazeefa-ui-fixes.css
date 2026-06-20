@@ -1,11 +1,6 @@
-/* Wazeefa UI fix patch
-   Add this after style.css in index.html:
-   <link rel="stylesheet" href="wazeefa-ui-fixes.css">
-*/
+/* Wazeefa UI fix patch */
 
-.app-header__actions {
-  position: relative;
-}
+.app-header__actions { position: relative; }
 
 .profile-menu {
   position: absolute;
@@ -19,204 +14,47 @@
   border-radius: var(--radius-md, 12px);
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
 }
+.profile-menu__header { padding: 0.75rem; border-bottom: 1px solid var(--color-border, #e5e7eb); margin-bottom: 0.35rem; }
+.profile-menu__name { margin: 0; font-weight: 700; color: var(--color-text, #111827); }
+.profile-menu__email { margin: 0.15rem 0 0; color: var(--color-text-muted, #6b7280); font-size: 0.85rem; word-break: break-word; }
+.profile-menu button { display: block; width: 100%; padding: 0.65rem 0.75rem; border: 0; border-radius: var(--radius-sm, 8px); background: transparent; color: var(--color-text, #111827); text-align: left; cursor: pointer; font: inherit; }
+.profile-menu button:hover { background: var(--color-bg-subtle, #f3f4f6); }
+.profile-menu button.danger { color: var(--color-danger, #dc2626); }
 
-.profile-menu__header {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
-  margin-bottom: 0.35rem;
-}
+.actions-cell { position: relative; white-space: nowrap; }
+.action-menu { position: absolute; top: calc(100% + 0.25rem); right: 0.25rem; z-index: 1000; min-width: 170px; padding: 0.35rem; background: #fff; border: 1px solid var(--color-border, #e5e7eb); border-radius: var(--radius-md, 12px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16); }
+.action-menu button { display: block; width: 100%; padding: 0.55rem 0.65rem; border: 0; border-radius: var(--radius-sm, 8px); background: transparent; color: var(--color-text, #111827); text-align: left; cursor: pointer; font: inherit; font-size: 0.9rem; }
+.action-menu button:hover { background: var(--color-bg-subtle, #f3f4f6); }
+.action-menu button.danger { color: var(--color-danger, #dc2626); }
+.action-menu-trigger { min-width: 2.2rem; text-align: center; }
 
-.profile-menu__name {
-  margin: 0;
-  font-weight: 700;
-  color: var(--color-text, #111827);
-}
+.table-card, .table-wrap, .candidates-content { min-width: 0; }
+.table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.data-table { width: 100%; min-width: 880px; table-layout: fixed; border-collapse: collapse; }
+.data-table th, .data-table td { vertical-align: middle; line-height: 1.35; }
+.data-table th:nth-child(1), .data-table td:nth-child(1) { width: 18%; }
+.data-table th:nth-child(2), .data-table td:nth-child(2) { width: 24%; }
+.data-table th:nth-child(3), .data-table td:nth-child(3) { width: 18%; }
+.data-table th:nth-child(4), .data-table td:nth-child(4) { width: 9%; }
+.data-table th:nth-child(5), .data-table td:nth-child(5) { width: 12%; }
+.data-table th:nth-child(6), .data-table td:nth-child(6) { width: 11%; }
+.data-table th:nth-child(7), .data-table td:nth-child(7) { width: 8%; }
+.data-table td { overflow: hidden; }
+.data-table td:not(.actions-cell) { white-space: nowrap; text-overflow: ellipsis; }
+.candidate-name-cell, .candidate-email-cell, .candidate-role-cell, .candidate-date-cell, .user-email-cell { max-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.badge, .table-action, .action-menu-trigger { white-space: nowrap; }
 
-.profile-menu__email {
-  margin: 0.15rem 0 0;
-  color: var(--color-text-muted, #6b7280);
-  font-size: 0.85rem;
-  word-break: break-word;
-}
+.multiline-text, .candidate-note-preview { white-space: pre-line; overflow: visible; text-overflow: initial; }
 
-.profile-menu button {
-  display: block;
-  width: 100%;
-  padding: 0.65rem 0.75rem;
-  border: 0;
-  border-radius: var(--radius-sm, 8px);
-  background: transparent;
-  color: var(--color-text, #111827);
-  text-align: left;
-  cursor: pointer;
-  font: inherit;
-}
+.candidate-action-modal, .profile-settings-modal { max-width: 680px; z-index: 999999; }
+.candidate-action-modal::backdrop, .profile-settings-modal::backdrop { background: rgba(0,0,0,.45); }
+.candidate-action-modal textarea, .profile-settings-modal textarea { width: 100%; resize: vertical; min-height: 120px; padding: .75rem 1rem; border: 1px solid var(--color-border, #e5e7eb); border-radius: var(--radius-md, 12px); background: var(--color-bg-subtle, #f3f4f6); color: var(--color-text, #111827); font: inherit; }
+.candidate-action-modal input, .candidate-action-modal select, .profile-settings-modal input, .profile-settings-modal select { width: 100%; }
+.candidate-action-hint { color: var(--color-text-muted, #6b7280); font-size: 0.9rem; line-height: 1.5; }
+.candidate-action-warning { margin-bottom: 1rem; color: var(--color-danger, #dc2626); font-weight: 600; }
+.settings-grid { display: grid; gap: 0.75rem; }
+.settings-item { padding: 0.75rem; border: 1px solid var(--color-border, #e5e7eb); border-radius: var(--radius-md, 12px); background: var(--color-bg-subtle, #f3f4f6); }
+.settings-item strong { display: block; margin-bottom: 0.2rem; }
+.settings-item span { color: var(--color-text-muted, #6b7280); word-break: break-word; }
 
-.profile-menu button:hover {
-  background: var(--color-bg-subtle, #f3f4f6);
-}
-
-.profile-menu button.danger {
-  color: var(--color-danger, #dc2626);
-}
-
-.actions-cell {
-  position: relative;
-  white-space: nowrap;
-}
-
-.action-menu {
-  position: absolute;
-  top: calc(100% + 0.25rem);
-  right: 0.25rem;
-  z-index: 1000;
-  min-width: 170px;
-  padding: 0.35rem;
-  background: #ffffff;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-md, 12px);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
-}
-
-.action-menu button {
-  display: block;
-  width: 100%;
-  padding: 0.55rem 0.65rem;
-  border: 0;
-  border-radius: var(--radius-sm, 8px);
-  background: transparent;
-  color: var(--color-text, #111827);
-  text-align: left;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.9rem;
-}
-
-.action-menu button:hover {
-  background: var(--color-bg-subtle, #f3f4f6);
-}
-
-.action-menu button.danger {
-  color: var(--color-danger, #dc2626);
-}
-
-.action-menu-trigger {
-  min-width: 2.2rem;
-  text-align: center;
-}
-
-.table-card,
-.table-wrap,
-.candidates-content {
-  min-width: 0;
-}
-
-.table-wrap {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.data-table {
-  width: 100%;
-  min-width: 880px;
-  table-layout: fixed;
-  border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-  vertical-align: middle;
-  line-height: 1.35;
-}
-
-.data-table th:nth-child(1),
-.data-table td:nth-child(1) { width: 18%; }
-.data-table th:nth-child(2),
-.data-table td:nth-child(2) { width: 24%; }
-.data-table th:nth-child(3),
-.data-table td:nth-child(3) { width: 18%; }
-.data-table th:nth-child(4),
-.data-table td:nth-child(4) { width: 9%; }
-.data-table th:nth-child(5),
-.data-table td:nth-child(5) { width: 12%; }
-.data-table th:nth-child(6),
-.data-table td:nth-child(6) { width: 11%; }
-.data-table th:nth-child(7),
-.data-table td:nth-child(7) { width: 8%; }
-
-/* Ellipsis behavior for long table text */
-.data-table td {
-  overflow: hidden;
-}
-
-.data-table td:not(.actions-cell) {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.data-table td:not(.actions-cell) *:not(.badge):not(button):not(.action-menu) {
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.candidate-name-cell,
-.candidate-email-cell,
-.candidate-role-cell,
-.candidate-date-cell,
-.user-email-cell {
-  max-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* Keep badges and buttons readable instead of truncating them */
-.badge,
-.table-action,
-.action-menu-trigger {
-  white-space: nowrap;
-}
-
-/* Candidate detail page can still show full paragraphs */
-.multiline-text {
-  white-space: pre-line;
-  overflow: visible;
-  text-overflow: initial;
-}
-
-.settings-grid {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.settings-item {
-  padding: 0.75rem;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-md, 12px);
-  background: var(--color-bg-subtle, #f3f4f6);
-}
-
-.settings-item strong {
-  display: block;
-  margin-bottom: 0.2rem;
-}
-
-.settings-item span {
-  color: var(--color-text-muted, #6b7280);
-  word-break: break-word;
-}
-
-.candidate-action-hint {
-  color: var(--color-text-muted, #6b7280);
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-@media (max-width: 900px) {
-  .data-table {
-    min-width: 760px;
-  }
-}
+@media (max-width: 900px) { .data-table { min-width: 760px; } }
