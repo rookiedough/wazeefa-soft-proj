@@ -4,14 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wazeefa — Recruitment Demo</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="wazeefa-ui-fixes.css">
 </head>
 <body>
-  <!-- App shell (shown after login) -->
+  <!-- App shell -->
   <div id="app-shell" class="app-shell">
     <header class="app-header">
       <div class="app-header__inner">
@@ -35,46 +37,262 @@
 
         <nav id="main-nav" class="main-nav" aria-label="Main navigation">
           <a href="#dashboard" class="nav-link" data-nav="dashboard">Dashboard</a>
+          <a href="#insights" class="nav-link" data-nav="insights">Insights</a>
           <a href="#candidates" class="nav-link" data-nav="candidates">Candidates</a>
           <a href="#cv-upload" class="nav-link" data-nav="cv-upload">CV Upload</a>
           <a href="#users" class="nav-link" data-nav="users">Users</a>
         </nav>
 
         <div class="app-header__actions">
-          <button type="button" class="avatar" id="logout-btn" title="Sign out">AM</button>
+          <button type="button" class="avatar" id="logout-btn" title="Open profile menu">AM</button>
         </div>
       </div>
     </header>
 
     <main class="app-main">
       <!-- Dashboard -->
-      <section id="view-dashboard" class="view" aria-label="Dashboard">
-        <header class="page-header">
-          <div>
-            <h1>Dashboard</h1>
-            <p class="page-header__subtitle">Overview of your recruitment pipeline</p>
-          </div>
-        </header>
+      <section id="view-dashboard" class="view view--active">
+        <div class="hr-dashboard">
+          <div class="dashboard-topbar dashboard-topbar--standalone">
+            <div class="dashboard-title-block">
+              <h1>HR Dashboard</h1>
+              <p>Overview of candidate rankings, hiring progress, and screening activity.</p>
+            </div>
 
-        <div class="stats-grid">
-          <article class="stat-card">
-            <p class="stat-card__label">Total Candidates</p>
-            <p class="stat-card__value" id="stat-candidates">0</p>
-          </article>
-          <article class="stat-card">
-            <p class="stat-card__label">In Interview</p>
-            <p class="stat-card__value" id="stat-interview">0</p>
-          </article>
-          <article class="stat-card">
-            <p class="stat-card__label">Offers Extended</p>
-            <p class="stat-card__value" id="stat-offers">0</p>
-          </article>
-          <article class="stat-card">
-            <p class="stat-card__label">Platform Users</p>
-            <p class="stat-card__value" id="stat-users">0</p>
-          </article>
+            <label class="dashboard-search">
+              <span aria-hidden="true">⌕</span>
+              <input
+                id="dashboard-search-input"
+                type="search"
+                placeholder="Search candidates..."
+                autocomplete="off"
+              >
+            </label>
+          </div>
+
+          <div class="dashboard-kpis">
+            <article class="dashboard-kpi">
+              <p>Total Candidates</p>
+              <strong id="stat-candidates">0</strong>
+            </article>
+
+            <article class="dashboard-kpi">
+              <p>Interviews</p>
+              <strong id="stat-interview">0</strong>
+            </article>
+
+            <article class="dashboard-kpi">
+              <p>Offers</p>
+              <strong id="stat-offers">0</strong>
+            </article>
+
+            <article class="dashboard-kpi">
+              <p>Users</p>
+              <strong id="stat-users">0</strong>
+            </article>
+          </div>
+
+          <section class="dashboard-card dashboard-ranking-card">
+            <div class="dashboard-card__header">
+              <h2>Candidate Rankings</h2>
+              <p>Top candidates ranked by AI screening score.</p>
+            </div>
+
+            <div class="dashboard-ranking-table">
+              <div class="dashboard-ranking-head">
+                <span>Name</span>
+                <span>Applied Position</span>
+                <span>Summary</span>
+                <span>Rank</span>
+              </div>
+
+              <div id="dashboard-ranking-list" class="dashboard-ranking-list"></div>
+            </div>
+          </section>
+
+          <section class="dashboard-card dashboard-chart-card">
+            <div class="dashboard-card__header">
+              <h2>Percent of Applicants Hired by Month</h2>
+              <p>Calculated from candidates with status marked as Hired or Offer.</p>
+            </div>
+
+            <div class="dashboard-chart">
+              <div class="dashboard-chart__y-axis">
+                <span>70%</span>
+                <span>50%</span>
+                <span>40%</span>
+                <span>30%</span>
+                <span>0%</span>
+              </div>
+
+              <div class="dashboard-chart__plot">
+                <div class="dashboard-chart__grid"></div>
+                <div id="dashboard-bar-list" class="dashboard-bar-list"></div>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
+
+      <!-- Insights -->
+      <section id="view-insights" class="view" aria-label="Insights">
+        <div class="insights-page">
+          <header class="insights-header">
+            <div>
+              <h1>Wazeefa Insights</h1>
+              <p>Track time saved, cost reduction, and platform performance metrics.</p>
+            </div>
+
+            <label class="insights-search">
+              <span aria-hidden="true">⌕</span>
+              <input
+                id="insights-search-input"
+                type="search"
+                placeholder="Search insights..."
+                autocomplete="off"
+              >
+            </label>
+          </header>
+
+          <div class="insights-metrics">
+            <article class="insight-card">
+              <div class="insight-card__header">
+                <h2>Total Time Saved</h2>
+                <span class="insight-icon">⏱</span>
+              </div>
+              <strong id="insight-time-saved">0 hours</strong>
+              <p class="insight-trend insight-trend--up">↗ +19.5% <span>from last month</span></p>
+            </article>
+
+            <article class="insight-card">
+              <div class="insight-card__header">
+                <h2>Cost Reduced</h2>
+                <span class="insight-icon">$</span>
+              </div>
+              <strong id="insight-cost-reduced">$0</strong>
+              <p class="insight-trend insight-trend--up">↗ +18.2% <span>from last month</span></p>
+            </article>
+
+            <article class="insight-card">
+              <div class="insight-card__header">
+                <h2>Candidates Processed</h2>
+                <span class="insight-icon">👥</span>
+              </div>
+              <strong id="insight-candidates-processed">0</strong>
+              <p class="insight-trend insight-trend--up">↗ +12.8% <span>from last month</span></p>
+            </article>
+
+            <article class="insight-card">
+              <div class="insight-card__header">
+                <h2>Success Rate</h2>
+                <span class="insight-icon">◎</span>
+              </div>
+              <strong id="insight-success-rate">0%</strong>
+              <p class="insight-trend insight-trend--down">↘ -2.1% <span>from last month</span></p>
+            </article>
+          </div>
+
+          <div class="insights-grid insights-grid--two">
+            <article class="insight-panel">
+              <header class="insight-panel__header">
+                <h2>⏱ Time Saved Over Time</h2>
+              </header>
+
+              <div class="insight-line-chart">
+                <div class="insight-y-axis">
+                  <span>80</span>
+                  <span>60</span>
+                  <span>40</span>
+                  <span>20</span>
+                  <span>0</span>
+                </div>
+
+                <div class="insight-line-plot">
+                  <svg viewBox="0 0 500 260" preserveAspectRatio="none" aria-hidden="true">
+                    <polyline
+                      id="insight-time-line"
+                      points="0,200 125,165 250,180 375,110 500,55"
+                      fill="none"
+                      stroke="black"
+                      stroke-width="3"
+                    />
+                    <g id="insight-time-points"></g>
+                  </svg>
+
+                  <div class="insight-x-axis">
+                    <span>Jan</span>
+                    <span>Feb</span>
+                    <span>Mar</span>
+                    <span>Apr</span>
+                    <span>May</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="insight-panel">
+              <header class="insight-panel__header">
+                <h2>$ Cost Savings</h2>
+              </header>
+
+              <div class="insight-bar-chart">
+                <div class="insight-y-axis">
+                  <span>6000</span>
+                  <span>4500</span>
+                  <span>3000</span>
+                  <span>1500</span>
+                  <span>0</span>
+                </div>
+
+                <div class="insight-bars" id="insight-cost-bars"></div>
+              </div>
+            </article>
+          </div>
+
+          <article class="insight-panel insight-panel--wide">
+            <header class="insight-panel__header">
+              <h2>◎ Weekly Activity</h2>
+            </header>
+
+            <div class="insight-weekly-chart" id="insight-weekly-chart"></div>
+
+            <div class="insight-legend">
+              <span><i></i> Candidates Reviewed</span>
+              <span><i></i> Interviews Scheduled</span>
+            </div>
+          </article>
+
+          <div class="insights-grid insights-grid--three">
+            <article class="insight-card insight-card--small">
+              <div class="insight-card__header">
+                <h2>Avg. Time per Candidate</h2>
+                <span class="insight-icon">◷</span>
+              </div>
+              <strong id="insight-average-time">2.1 hours</strong>
+              <p>Down from 3.5 hours manually</p>
+            </article>
+
+            <article class="insight-card insight-card--small">
+              <div class="insight-card__header">
+                <h2>Platform Adoption</h2>
+                <span class="insight-icon">👥</span>
+              </div>
+              <strong>92%</strong>
+              <p>Of team actively using platform</p>
+            </article>
+
+            <article class="insight-card insight-card--small">
+              <div class="insight-card__header">
+                <h2>Avg. Score Improvement</h2>
+                <span class="insight-icon">↗</span>
+              </div>
+              <strong>+14.3%</strong>
+              <p>Candidate quality increase</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
 
       <!-- Candidates -->
       <section id="view-candidates" class="view" aria-label="Candidates">
@@ -88,11 +306,7 @@
             <form id="filters-form" class="filters-form">
               <div class="form-field">
                 <label for="filter-search">Search</label>
-                <input
-                  type="search"
-                  id="filter-search"
-                  placeholder="Name or email..."
-                >
+                <input type="search" id="filter-search" placeholder="Name or email...">
               </div>
 
               <div class="form-field">
@@ -110,9 +324,7 @@
               </div>
 
               <div class="form-field">
-                <label for="filter-score">
-                  Min Score: <span id="score-value">0</span>
-                </label>
+                <label for="filter-score">Min Score: <span id="score-value">0</span></label>
                 <input type="range" id="filter-score" min="0" max="100" value="0">
               </div>
 
@@ -124,9 +336,7 @@
             <header class="page-header page-header--compact">
               <div>
                 <h1>Candidates</h1>
-                <p class="page-header__subtitle">
-                  <span id="candidate-count">0</span> candidates found
-                </p>
+                <p class="page-header__subtitle"><span id="candidate-count">0</span> candidates found</p>
               </div>
             </header>
 
@@ -236,14 +446,8 @@
         </header>
 
         <div class="card upload-card">
-          <div
-            class="upload-zone"
-            id="upload-zone"
-            tabindex="0"
-            role="button"
-            aria-label="Upload CV file"
-          >
-            <div class="upload-zone__icon" aria-hidden="true">&#8593;</div>
+          <div class="upload-zone" id="upload-zone" tabindex="0" role="button" aria-label="Upload CV file">
+            <div class="upload-zone__icon" aria-hidden="true">↑</div>
             <p class="upload-zone__title">Drag and drop or upload your files</p>
             <p class="upload-zone__hint">(.pdf or .docx)</p>
             <input type="file" id="cv-file-input" accept=".pdf,.doc,.docx" hidden>
@@ -337,10 +541,8 @@
     </form>
   </dialog>
 
-  <!-- Toast notifications -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <script src="script.js"></script>
-  
 </body>
 </html>

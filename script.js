@@ -20,8 +20,7 @@ const INTERVIEWS_KEY = "wazeefa_candidate_interviews";
 const REJECTED_KEY = "wazeefa_rejected_candidates";
 const STAGES_KEY = "wazeefa_candidate_stages";
 const STAGE_HISTORY_KEY = "wazeefa_candidate_stage_history";
-const APP_VIEWS = new Set(["dashboard", "candidates", "candidate-detail", "cv-upload", "users"]);
-
+const APP_VIEWS = new Set(["dashboard", "insights", "candidates", "candidate-detail", "cv-upload", "users"]);
 let CANDIDATES = [];
 let users = [];
 
@@ -248,6 +247,7 @@ function navigate(view, params = {}) {
   $("#nav-toggle")?.setAttribute("aria-expanded", "false");
 
   if (view === "dashboard") renderDashboard();
+  if (view === "insights") renderInsights();
   if (view === "candidates") renderCandidatesTable();
   if (view === "candidate-detail") renderCandidateDetail();
   if (view === "users") renderUsersTable();
@@ -386,17 +386,266 @@ function renderDashboard() {
       .join("")
       .slice(0, 2)
       .toUpperCase();
+
     avatar.title = `Open profile menu for ${state.currentUser.name}`;
     avatar.setAttribute("aria-haspopup", "menu");
     avatar.setAttribute("aria-expanded", "false");
   }
+
   ensureProfileMenu();
 
-  if ($("#stat-candidates")) $("#stat-candidates").textContent = allCandidates.length;
-  if ($("#stat-interview")) $("#stat-interview").textContent = allCandidates.filter((c) => getCandidateDisplayStatus(c) === "Interview").length;
-  if ($("#stat-offers")) $("#stat-offers").textContent = allCandidates.filter((c) => getCandidateDisplayStatus(c) === "Offer").length;
-  if ($("#stat-users")) $("#stat-users").textContent = users.length;
+  if ($("#stat-candidates")) {
+    $("#stat-candidates").textContent = allCandidates.length;
+  }
+
+  if ($("#stat-interview")) {
+    $("#stat-interview").textContent = allCandidates.filter(
+      (candidate) => getCandidateDisplayStatus(candidate) === "Interview"
+    ).length;
+  }
+
+  if ($("#stat-offers")) {
+    $("#stat-offers").textContent = allCandidates.filter((candidate) =>
+      ["Offer", "Hired"].includes(getCandidateDisplayStatus(candidate))
+    ).length;
+  }
+
+  if ($("#stat-users")) {
+    $("#stat-users").textContent = users.length;
+  }
+
+  renderDashboardRankings();
+  renderDashboardChart();
 }
+
+function getDashboardFilteredCandidates() {
+  const input = $("#dashboard-search-input");
+  const query = input ? input.value.trim().toLowerCase() : "";
+
+  const candidates = getAllCandidates();
+
+  if (!query) return candidates;
+
+  return candidates.filter((candidate) => {
+    const name = candidate.name || "";
+    const role = candidate.role || "";
+    const summary = candidate.summary || "";
+
+    return (
+      name.toLowerCase().includes(query) ||
+      role.toLowerCase().includes(query) ||
+      summary.toLowerCase().includes(query)
+    );
+  });
+}
+
+function renderDashboardRankings() {
+  const list = $("#dashboard-ranking-list");
+  if (!list) return;
+
+  const ranked = getDashboardFilteredCandidates()
+    .slice()
+    .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
+    .slice(0, 10);
+
+  if (!ranked.length) {
+    list.innerHTML = `<div class="dashboard-empty">No candidates found.</div>`;
+    return;
+  }
+
+  list.innerHTML = ranked
+    .map(
+      (candidate, index) => `
+        <button
+          type="button"
+          class="dashboard-ranking-row"
+          data-dashboard-candidate="${escapeHtml(candidate.id)}"
+        >
+          <span
+            class="dashboard-ranking-row__name"
+            title="${escapeHtml(candidate.name || "Unknown Candidate")}"
+          >
+            ${escapeHtml(candidate.name || "Unknown Candidate")}
+          </span>
+
+          <span
+            class="dashboard-ranking-row__muted"
+            title="${escapeHtml(candidate.role || "Candidate")}"
+          >
+            ${escapeHtml(candidate.role || "Candidate")}
+          </span>
+
+          <span
+            class="dashboard-ranking-row__muted"
+            title="${escapeHtml(candidate.summary || "")}"
+          >
+            ${escapeHtml(candidate.summary || "No summary available.")}
+          </span>
+
+          <span class="dashboard-ranking-row__rank">
+            ${index + 1}
+          </span>
+        </button>
+      `
+    )
+    .join("");
+}
+
+function renderInsights() {
+  const candidates = getAllCandidates();
+  const processed = candidates.length;
+
+  const interviews = candidates.filter(
+    (candidate) => getCandidateDisplayStatus(candidate) === "Interview"
+  ).length;
+
+  const offersOrHired = candidates.filter((candidate) =>
+    ["Offer", "Hired"].includes(getCandidateDisplayStatus(candidate))
+  ).length;
+
+  const timeSavedHours = processed * 2;
+  const costReduced = processed * 150;
+  const successRate = processed ? Math.round((offersOrHired / processed) * 100) : 0;
+  const averageTime = processed ? "2.1 hours" : "0 hours";
+
+  if ($("#insight-time-saved")) {
+    $("#insight-time-saved").textContent = `${timeSavedHours} hours`;
+  }
+
+  if ($("#insight-cost-reduced")) {
+    $("#insight-cost-reduced").textContent = `$${costReduced.toLocaleString()}`;
+  }
+
+  if ($("#insight-candidates-processed")) {
+    $("#insight-candidates-processed").textContent = processed;
+  }
+
+  if ($("#insight-success-rate")) {
+    $("#insight-success-rate").textContent = `${successRate}%`;
+  }
+
+  if ($("#insight-average-time")) {
+    $("#insight-average-time").textContent = averageTime;
+  }
+
+  renderInsightsCostBars(processed);
+  renderInsightsWeeklyChart(processed, interviews);
+}
+
+function renderInsightsCostBars(processed) {
+  const container = $("#insight-cost-bars");
+  if (!container) return;
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May"];
+  const values = [2100, 2500, 2300, 3100, 3650].map((value) =>
+    processed ? value + processed * 20 : 0
+  );
+
+  const max = Math.max(...values, 1);
+
+  container.innerHTML = values
+    .map((value, index) => {
+      const height = Math.max(6, Math.round((value / max) * 88));
+
+      return `
+        <div class="insight-bar-item" title="${months[index]}: $${value.toLocaleString()}">
+          <div class="insight-bar" style="height: ${height}%"></div>
+          <span class="insight-bar-label">${months[index]}</span>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderInsightsWeeklyChart(processed, interviews) {
+  const container = $("#insight-weekly-chart");
+  if (!container) return;
+
+  const weeks = ["Week 1", "Week 2", "Week 3", "Week 4"];
+
+  const reviewed = [
+    Math.max(4, Math.round(processed * 0.22)),
+    Math.max(6, Math.round(processed * 0.28)),
+    Math.max(5, Math.round(processed * 0.24)),
+    Math.max(7, Math.round(processed * 0.34))
+  ];
+
+  const scheduled = [
+    Math.max(1, Math.round(interviews * 0.2)),
+    Math.max(2, Math.round(interviews * 0.3)),
+    Math.max(1, Math.round(interviews * 0.25)),
+    Math.max(2, Math.round(interviews * 0.35))
+  ];
+
+  const max = Math.max(...reviewed, ...scheduled, 1);
+
+  container.innerHTML = weeks
+    .map((week, index) => {
+      const reviewedHeight = Math.max(8, Math.round((reviewed[index] / max) * 85));
+      const scheduledHeight = Math.max(8, Math.round((scheduled[index] / max) * 85));
+
+      return `
+        <div class="insight-weekly-item" title="${week}">
+          <div class="insight-weekly-bar" style="height: ${reviewedHeight}%"></div>
+          <div class="insight-weekly-bar" style="height: ${scheduledHeight}%"></div>
+          <span class="insight-weekly-label">${week}</span>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function getCandidateMonthIndex(candidate) {
+  const rawDate = candidate.applied;
+  const parsed = rawDate ? new Date(rawDate) : null;
+
+  if (parsed && !Number.isNaN(parsed.getTime())) {
+    return parsed.getMonth();
+  }
+
+  return new Date().getMonth();
+}
+
+function renderDashboardChart() {
+  const barList = $("#dashboard-bar-list");
+  if (!barList) return;
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const monthly = months.map((month) => ({
+    month,
+    total: 0,
+    hired: 0
+  }));
+
+  getAllCandidates().forEach((candidate) => {
+    const monthIndex = getCandidateMonthIndex(candidate);
+    const status = getCandidateDisplayStatus(candidate);
+
+    monthly[monthIndex].total += 1;
+
+    if (["Hired", "Offer"].includes(status)) {
+      monthly[monthIndex].hired += 1;
+    }
+  });
+
+  barList.innerHTML = monthly
+    .map((item) => {
+      const percent = item.total ? Math.round((item.hired / item.total) * 100) : 0;
+      const height = Math.max(6, percent);
+
+      return `
+        <div class="dashboard-bar-item" title="${item.month}: ${percent}%">
+          <div class="dashboard-bar-value">${percent}%</div>
+          <div class="dashboard-bar" style="height: ${height}%"></div>
+          <div class="dashboard-bar-label">${item.month}</div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+
 
 function getUniqueValues(key) {
   return [...new Set(getAllCandidates().map((c) => c[key]).filter(Boolean))].sort();
@@ -1359,6 +1608,28 @@ function initEventListeners() {
       closeProfileMenu();
       closeAllUserMenus();
     }
+  });
+
+  $("#dashboard-search-input")?.addEventListener("input", () => {
+    renderDashboardRankings();
+  });
+
+  $("#dashboard-ranking-list")?.addEventListener("click", (event) => {
+    const row = event.target.closest("[data-dashboard-candidate]");
+    if (!row) return;
+
+    navigate("candidate-detail", {
+      id: row.dataset.dashboardCandidate
+    });
+  });
+
+  $("#insights-search-input")?.addEventListener("input", () => {
+    const query = $("#insights-search-input").value.trim().toLowerCase();
+
+    $$(".insight-card, .insight-panel").forEach((card) => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = !query || text.includes(query) ? "" : "none";
+    });
   });
 
   window.addEventListener("hashchange", parseHash);

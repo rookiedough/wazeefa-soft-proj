@@ -267,3 +267,657 @@ dialog,
 #simple-action-modal {
   z-index: 1000000 !important;
 }
+
+/* =========================================================
+   Wazeefa Working HR Dashboard
+   ========================================================= */
+
+.hr-dashboard {
+  min-height: calc(100vh - 4rem);
+  padding: 2rem;
+  background: #ffffff;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.dashboard-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-segmented {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: #ffffff;
+  border-radius: 0.75rem;
+}
+
+.dashboard-tab {
+  height: 2rem;
+  padding: 0 0.85rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.dashboard-tab--active,
+.dashboard-tab:hover {
+  background: #efefef;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-search {
+  width: min(405px, 100%);
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.75rem;
+}
+
+.dashboard-search span {
+  color: #828282;
+  font-size: 1.2rem;
+}
+
+.dashboard-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+}
+
+.dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-kpi {
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-kpi p {
+  margin: 0 0 0.35rem;
+  color: #828282;
+  font-size: 0.875rem;
+}
+
+.dashboard-kpi strong {
+  color: #000000;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.dashboard-ranking-card {
+  margin-bottom: 1.75rem;
+}
+
+.dashboard-card__header {
+  padding: 1.35rem 1.5rem 1rem;
+}
+
+.dashboard-card__header h2 {
+  margin: 0;
+  color: #000000;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.dashboard-card__header p {
+  margin: 0.25rem 0 0;
+  color: #828282;
+  font-size: 0.875rem;
+}
+
+.dashboard-ranking-table {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.dashboard-ranking-head,
+.dashboard-ranking-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1.2fr 2fr 0.5fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.dashboard-ranking-head {
+  padding: 0.75rem 0;
+  color: #828282;
+  font-weight: 700;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dashboard-ranking-row {
+  min-height: 3rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+
+.dashboard-ranking-row:hover {
+  background: #f7f7f7;
+}
+
+.dashboard-ranking-row span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dashboard-ranking-row__name {
+  color: #000000;
+  font-weight: 600;
+}
+
+.dashboard-ranking-row__muted {
+  color: #111827;
+  font-weight: 400;
+}
+
+.dashboard-ranking-row__rank {
+  text-align: right;
+  font-weight: 600;
+}
+
+.dashboard-empty {
+  padding: 2rem 0;
+  color: #828282;
+  text-align: center;
+}
+
+.dashboard-chart-card {
+  padding-bottom: 1.25rem;
+}
+
+.dashboard-chart {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 1rem;
+  height: 360px;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.dashboard-chart__y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #828282;
+  font-size: 0.8125rem;
+  padding-bottom: 2rem;
+}
+
+.dashboard-chart__plot {
+  position: relative;
+  min-width: 0;
+}
+
+.dashboard-chart__grid {
+  position: absolute;
+  inset: 0 0 2rem 0;
+  background-image: linear-gradient(to bottom, #eeeeee 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+
+.dashboard-bar-list {
+  position: absolute;
+  inset: 0 0 0 0;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+  padding: 0 0.25rem 2rem;
+}
+
+.dashboard-bar-item {
+  height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dashboard-bar {
+  width: min(100%, 3.75rem);
+  min-height: 0.4rem;
+  background: #000000;
+  border-radius: 0.35rem 0.35rem 0 0;
+  transition: height 0.2s ease;
+}
+
+.dashboard-bar-label {
+  color: #828282;
+  font-size: 0.8125rem;
+}
+
+.dashboard-bar-value {
+  color: #111827;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .hr-dashboard {
+    padding: 1rem;
+  }
+
+  .dashboard-topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-ranking-head,
+  .dashboard-ranking-row {
+    grid-template-columns: 1.2fr 1fr 0.5fr;
+  }
+
+  .dashboard-ranking-head span:nth-child(3),
+  .dashboard-ranking-row span:nth-child(3) {
+    display: none;
+  }
+
+  .dashboard-chart {
+    grid-template-columns: 3.5rem 1fr;
+    overflow-x: auto;
+  }
+
+  .dashboard-bar-list {
+    min-width: 720px;
+  }
+}
+
+.dashboard-topbar--standalone {
+  align-items: flex-start;
+}
+
+.dashboard-title-block h1 {
+  margin: 0;
+  color: #000000;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.dashboard-title-block p {
+  margin: 0.35rem 0 0;
+  color: #828282;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Optional: hide old segmented controls if any remain */
+.dashboard-segmented,
+.dashboard-tab {
+  display: none !important;
+}
+
+/* =========================================================
+   Wazeefa Insights Page
+   ========================================================= */
+
+.insights-page {
+  min-height: calc(100vh - 4rem);
+  padding: 2rem;
+  background: #ffffff;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.insights-header h1 {
+  margin: 0;
+  color: #0a0a0a;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.insights-header p {
+  margin: 0.4rem 0 0;
+  color: #717182;
+  font-size: 1rem;
+}
+
+.insights-search {
+  width: min(405px, 100%);
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.75rem;
+}
+
+.insights-search span {
+  color: #828282;
+  font-size: 1.2rem;
+}
+
+.insights-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+}
+
+.insights-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.insight-card,
+.insight-panel {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+}
+
+.insight-card {
+  min-height: 160px;
+  padding: 1.5rem;
+}
+
+.insight-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.insight-card h2 {
+  margin: 0;
+  color: #0a0a0a;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.insight-icon {
+  color: #717182;
+  font-size: 1rem;
+}
+
+.insight-card strong {
+  display: block;
+  color: #0a0a0a;
+  font-size: 1.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.insight-card p {
+  margin: 0.4rem 0 0;
+  color: #717182;
+  font-size: 0.85rem;
+}
+
+.insight-trend {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.insight-trend--up {
+  color: #00a63e !important;
+}
+
+.insight-trend--down {
+  color: #e7000b !important;
+}
+
+.insight-trend span {
+  color: #717182;
+}
+
+.insights-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.insights-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.insights-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.insight-panel {
+  padding: 1.5rem;
+}
+
+.insight-panel__header {
+  margin-bottom: 1.5rem;
+}
+
+.insight-panel__header h2 {
+  margin: 0;
+  color: #0a0a0a;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.insight-line-chart,
+.insight-bar-chart {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 1rem;
+  height: 320px;
+}
+
+.insight-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #666666;
+  font-size: 0.8rem;
+  padding-bottom: 2rem;
+  text-align: right;
+}
+
+.insight-line-plot {
+  position: relative;
+  min-width: 0;
+  border-bottom: 1px solid #eeeeee;
+  background-image: linear-gradient(to bottom, #eeeeee 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+
+.insight-line-plot svg {
+  position: absolute;
+  inset: 0 0 2rem 0;
+  width: 100%;
+  height: calc(100% - 2rem);
+  overflow: visible;
+}
+
+.insight-x-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  color: #666666;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.insight-bars {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
+  gap: 1rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #eeeeee;
+  background-image: linear-gradient(to bottom, #eeeeee 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+
+.insight-bar-item {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.insight-bar {
+  width: min(74px, 100%);
+  background: #000000;
+  border-radius: 4px 4px 0 0;
+}
+
+.insight-bar-label {
+  color: #666666;
+  font-size: 0.8rem;
+}
+
+.insight-panel--wide {
+  margin-bottom: 1.5rem;
+}
+
+.insight-weekly-chart {
+  height: 300px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: 3rem;
+  padding: 1rem 4rem 2rem;
+  border-bottom: 1px solid #eeeeee;
+  background-image: linear-gradient(to bottom, #eeeeee 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+
+.insight-weekly-item {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.insight-weekly-bar {
+  width: 48px;
+  background: #000000;
+  border-radius: 4px 4px 0 0;
+}
+
+.insight-weekly-label {
+  position: absolute;
+  bottom: -1.75rem;
+  color: #666666;
+  font-size: 0.8rem;
+}
+
+.insight-legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.25rem;
+  color: #0a0a0a;
+  font-size: 0.95rem;
+}
+
+.insight-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.insight-legend i {
+  width: 14px;
+  height: 10px;
+  background: #000000;
+  display: inline-block;
+}
+
+.insight-card--small {
+  min-height: 150px;
+}
+
+@media (max-width: 1100px) {
+  .insights-metrics,
+  .insights-grid--two,
+  .insights-grid--three {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .insight-weekly-chart {
+    gap: 1.5rem;
+    padding-inline: 1rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .insights-page {
+    padding: 1rem;
+  }
+
+  .insights-header {
+    flex-direction: column;
+  }
+
+  .insights-metrics,
+  .insights-grid--two,
+  .insights-grid--three {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-line-chart,
+  .insight-bar-chart {
+    grid-template-columns: 2.5rem 1fr;
+  }
+
+  .insight-weekly-chart {
+    overflow-x: auto;
+    min-width: 640px;
+  }
+}

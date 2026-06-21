@@ -1027,3 +1027,89 @@ select {
   flex-shrink: 0;
 }
 
+/* Candidate Rankings table: white rows with only top/bottom borders */
+
+.dashboard-ranking-list {
+  background: #ffffff;
+}
+
+.dashboard-ranking-row {
+  width: 100%;
+  background: #ffffff;
+  border: 0;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  border-left: 0;
+  border-right: 0;
+  box-shadow: none;
+}
+
+.dashboard-ranking-row + .dashboard-ranking-row {
+  border-top: 0;
+}
+
+.dashboard-ranking-row:hover {
+  background: #ffffff;
+}
+
+.dashboard-ranking-head {
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Candidate Rankings alignment */
+
+.dashboard-ranking-head,
+.dashboard-ranking-row {
+  grid-template-columns: 1.5fr 1.2fr 2fr 0.5fr;
+}
+
+/* Name column: left */
+.dashboard-ranking-head span:nth-child(1),
+.dashboard-ranking-row span:nth-child(1) {
+  text-align: left;
+  justify-self: start;
+}
+
+/* Applied Position column: left */
+.dashboard-ranking-head span:nth-child(2),
+.dashboard-ranking-row span:nth-child(2) {
+  text-align: left;
+  justify-self: start;
+}
+
+/* Summary column: left */
+.dashboard-ranking-head span:nth-child(3),
+.dashboard-ranking-row span:nth-child(3) {
+  text-align: left;
+  justify-self: start;
+}
+
+/* Rank column: center */
+.dashboard-ranking-head span:nth-child(4),
+.dashboard-ranking-row span:nth-child(4) {
+  text-align: center;
+  justify-self: center;
+}
+
+/* Make rank cell fill nicely */
+.dashboard-ranking-row__rank {
+  width: 100%;
+  text-align: center;
+}
+
+/* Candidate Rankings: force summary ellipsis */
+
+.dashboard-ranking-row span:nth-child(3),
+.dashboard-ranking-head span:nth-child(3) {
+  min-width: 0;
+}
+
+.dashboard-ranking-row span:nth-child(3) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
