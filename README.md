@@ -32,4 +32,5 @@ Open the app, log in with a demo user, upload or review candidates, and explore 
 
 ## Login Details for the demo
 **User:** admin@company.com
+
 **Password:** password123
