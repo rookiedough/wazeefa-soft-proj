@@ -31,6 +31,5 @@ This is a demo only. Some data and insights are simulated or estimated and shoul
 Open the app, log in with a demo user, upload or review candidates, and explore the dashboard, insights, candidates, CV upload, and user management pages.
 
 ## Login Details for the demo
-**User:** admin@company.com
-
-**Password:** password123
+### **User:** admin@company.com
+### **Password:** password123
