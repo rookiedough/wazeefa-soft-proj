@@ -23,8 +23,6 @@ This is a demo only. Some data and insights are simulated or estimated and shoul
 - HTML
 - CSS
 - JavaScript
-- LocalStorage
-- JSON sample data
 
 ## Usage
 
